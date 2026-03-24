@@ -1,0 +1,5 @@
+ru.alcodist.buhlowar.test.app-androidTest-0 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\generated\res\resValues\androidTest\debug
+ru.alcodist.buhlowar.test.app-updated_navigation_xml-1 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\generated\updated_navigation_xml\debugAndroidTest
+ru.alcodist.buhlowar.test.app-mergeDebugAndroidTestResources-2 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+ru.alcodist.buhlowar.test.app-mergeDebugAndroidTestResources-3 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+ru.alcodist.buhlowar.test.app-debugAndroidTest-4 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources

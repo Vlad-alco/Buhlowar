@@ -1,0 +1,9 @@
+ru.alcodist.buhlowar.app-pngs-0 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\generated\res\pngs\debug
+ru.alcodist.buhlowar.app-res-1 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\generated\res\processDebugGoogleServices
+ru.alcodist.buhlowar.app-resValues-2 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\generated\res\resValues\debug
+ru.alcodist.buhlowar.app-updated_navigation_xml-3 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\generated\updated_navigation_xml\debug
+ru.alcodist.buhlowar.app-packageDebugResources-4 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+ru.alcodist.buhlowar.app-packageDebugResources-5 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+ru.alcodist.buhlowar.app-debug-6 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\build\intermediates\merged_res\debug\mergeDebugResources
+ru.alcodist.buhlowar.app-debug-7 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\src\debug\res
+ru.alcodist.buhlowar.app-main-8 C:\Users\Vlad\Documents\Arduino\Z_AI\210326\BuhloWar\android\BuhloWarApp\app\src\main\res

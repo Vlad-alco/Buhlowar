@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "ru.alcodist.buhlowar.app-debug-40:/layout_activity_main.xml.flat",
+        "source": "ru.alcodist.buhlowar.app-main-42:/layout/activity_main.xml"
+    },
+    {
+        "merged": "ru.alcodist.buhlowar.app-debug-40:/mipmap_ic_launcher.xml.flat",
+        "source": "ru.alcodist.buhlowar.app-main-42:/mipmap/ic_launcher.xml"
+    },
+    {
+        "merged": "ru.alcodist.buhlowar.app-debug-40:/drawable_ic_notification.xml.flat",
+        "source": "ru.alcodist.buhlowar.app-main-42:/drawable/ic_notification.xml"
+    }
+]

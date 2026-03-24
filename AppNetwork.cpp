@@ -84,7 +84,13 @@ void AppNetwork::startWebServerEarly() {
     server->on("/", HTTP_GET, [this]() {
         if (sdMutex) xSemaphoreTake(sdMutex, pdMS_TO_TICKS(5000));
         
-        File file = SD.open("/www/index.html", "r");
+        // SD.open с retry
+        File file;
+        for (int retry = 0; retry < 3; retry++) {
+            file = SD.open("/www/index.html", "r");
+            if (file) break;
+            delay(10);
+        }
         
         if (file) {
             server->streamFile(file, "text/html");

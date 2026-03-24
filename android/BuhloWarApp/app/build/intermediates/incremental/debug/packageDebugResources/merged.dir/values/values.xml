@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#ffff5555</color>
+    <color name="background">#ff1a1a2e</color>
+    <color name="card_background">#ff16213e</color>
+    <color name="danger">#ffff5555</color>
+    <color name="notification_color">#ffff5555</color>
+    <color name="primary">#ff00d4ff</color>
+    <color name="primary_dark">#ff0099cc</color>
+    <color name="success">#ff55ff55</color>
+    <color name="text_primary">#ffffffff</color>
+    <color name="text_secondary">#ff888888</color>
+    <color name="warning">#ffffff55</color>
+    <string name="app_name">BuhloWar</string>
+    <string name="gcm_defaultSenderId" translatable="false">119914316293</string>
+    <string name="google_api_key" translatable="false">AIzaSyBzpCTvhNXEpnHfgkJ_TpyOmOKWdnF_QxE</string>
+    <string name="google_app_id" translatable="false">1:119914316293:android:4fd8bd08739f1d6da8926c</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBzpCTvhNXEpnHfgkJ_TpyOmOKWdnF_QxE</string>
+    <string name="google_storage_bucket" translatable="false">buhlowar-a93cd.firebasestorage.app</string>
+    <string name="project_id" translatable="false">buhlowar-a93cd</string>
+    <style name="Theme.BuhloWar" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/background</item>
+    </style>
+</resources>

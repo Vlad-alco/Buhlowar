@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "119914316293",
+    "project_id": "buhlowar-a93cd",
+    "storage_bucket": "buhlowar-a93cd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119914316293:android:4fd8bd08739f1d6da8926c",
+        "android_client_info": {
+          "package_name": "ru.alcodist.buhlowar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzpCTvhNXEpnHfgkJ_TpyOmOKWdnF_QxE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

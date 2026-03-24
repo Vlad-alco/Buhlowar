@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "ru.alcodist.buhlowar.app-mergeDebugResources-38:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Vlad\\.gradle\\caches\\9.3.1\\transforms\\16886c2c42c8378b0785e7aeb501cab5\\workspace\\transformed\\appcompat-1.6.1\\res\\values-hdpi-v4\\values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}
