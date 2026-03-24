@@ -81,12 +81,6 @@ public:
       lcd->setCursor(0, i);
       lcd->print(buf);
       
-      // Вывод статуса сети (W/A/X) в строке 0, справа
-      if (i == 0) {
-        lcd->setCursor(19, 0);
-        lcd->print(appNetwork.getNetworkSymbol());
-      }
-      
       // Очищаем остаток строки, если текст короче 20 символов
       int len = strlen(buf);
       if (len < 20) {
@@ -94,6 +88,12 @@ public:
         for (int j = len; j < 20; j++) {
           lcd->print(" ");
         }
+      }
+      
+      // Вывод статуса сети (W/A/X) в строке 0, справа (ПОСЛЕ очистки!)
+      if (i == 0) {
+        lcd->setCursor(19, 0);
+        lcd->print(appNetwork.getNetworkSymbol());
       }
     }
     

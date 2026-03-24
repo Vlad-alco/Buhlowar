@@ -150,8 +150,9 @@
 
             <!-- Top Control Bar -->
             <div class="bg-gray-800 rounded-lg p-2 mb-4 shadow-lg">
-                <div class="grid grid-cols-7 gap-1 items-center text-xs">
+                <div class="grid grid-cols-8 gap-1 items-center text-xs">
                     <button onclick="showPage('settings')" class="w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center"><i data-lucide="settings" class="w-4 h-4 text-gray-300"></i></button>
+                    <button onclick="testAlarm()" class="w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center" title="Test alarm"><i data-lucide="volume-2" class="w-4 h-4 text-gray-300"></i></button>
                     <div class="text-center col-span-2"><div class="text-blue-400 font-bold" id="pressure-value">760</div><span class="text-gray-500 text-[10px]">mm Hg</span></div>
                     <div class="text-center"><div class="text-green-400 font-bold" id="power-display">3000</div><span class="text-gray-500 text-[10px]">W</span></div>
                     
@@ -732,6 +733,7 @@
     </div>
     
     <script>
+        console.log('[Init] Script loaded');
         if (typeof lucide !== 'undefined') lucide.createIcons();
         const API_STATUS = '/api/status';
         const API_COMMAND = '/api/command';
@@ -758,6 +760,87 @@
             const url = localStorage.getItem('cloudApiUrl') || '';
             const key = localStorage.getItem('cloudApiKey') || '';
             setCloudMode(enabled, url, key);
+        }
+        
+        // === ЗВУК И УВЕДОМЛЕНИЯ ПРИ АВАРИИ ===
+        let lastSafetyCode = 0;
+        let prevSafetyCode = 0;
+        
+        // Тест кнопка
+        window.testAlarm = function() {
+            console.log('[Alarm] Test click');
+            window.playAlarmSound();
+            if ('Notification' in window) {
+                console.log('[Alarm] Perm:', Notification.permission);
+                Notification.requestPermission().then(p => {
+                    console.log('[Alarm] Perm result:', p);
+                    if (p === 'granted') new Notification('Тест', {body:'OK'});
+                });
+            }
+        };
+        
+        // Глобальная функция для кнопки
+        window.playAlarmSound = function() {
+            console.log('[Alarm] Playing...');
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = 880;
+                osc.type = 'square';
+                gain.gain.value = 0.3;
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+                console.log('[Alarm] Sound OK');
+            } catch(e) {
+                console.log('[Alarm] Error:', e);
+            }
+        };
+        
+        function triggerAlarm(safetyCode, safetyText) {
+            console.log('[Alarm] TRIGGERED! code=' + safetyCode + ', text=' + safetyText);
+            
+            // Звук
+            window.playAlarmSound();
+            setTimeout(window.playAlarmSound, 250);
+            setTimeout(window.playAlarmSound, 500);
+            
+            // Уведомление
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    try {
+                        new Notification(safetyCode === 3 ? '🚨 АВАРИЯ!' : '⚠️ ВНИМАНИЕ!', {
+                            body: safetyText || 'Требуется внимание!',
+                            icon: 'https://control.alcodist.ru/favicon.ico',
+                            tag: 'buhlo-alarm'
+                        });
+                    } catch(e) { console.log('[Alarm] Notif error:', e); }
+                } else {
+                    console.log('[Alarm] Notif perm:', Notification.permission);
+                    Notification.requestPermission().then(perm => {
+                        if (perm === 'granted') {
+                            new Notification(safetyCode === 3 ? '🚨 АВАРИЯ!' : '⚠️ ВНИМАНИЕ!', {
+                                body: safetyText || 'Требуется внимание!',
+                                icon: 'https://control.alcodist.ru/favicon.ico'
+                            });
+                        }
+                    });
+                }
+            }
+        }
+        
+        function checkSafetyAlarm() {
+            const code = currentData.safety_code;
+            console.log('[Alarm] Check: code=' + code + ', prev=' + prevSafetyCode);
+            if (code >= 1 && code !== prevSafetyCode) {
+                console.log('[Alarm] ALARM TRIGGER!');
+                triggerAlarm(code, currentData.safety_text, currentData.safety_detail);
+            }
+            prevSafetyCode = code || 0;
         }
         
         function getCloudStatusUrl() {
@@ -892,8 +975,10 @@
                 currentData.tank = newData.tank;
                 currentData.stage = newData.stage;
                 currentData.time = newData.time;
-                currentData.safety_code = newData.safety_code;
-                currentData.safety_text = newData.safety_text;
+                console.log('[Data] raw safety:', newData.safety, 'safety_code:', newData.safety_code);
+                currentData.safety_code = newData.safety_code !== undefined ? newData.safety_code : (newData.safety || 0);
+                currentData.safety_text = newData.safety_text || (newData.safety_code === 0 ? 'Норма' : (newData.safety_code === 1 ? 'ВНИМАНИЕ' : 'АВАРИЯ!'));
+                currentData.safety_detail = newData.safety_detail || '';
                 currentData.process = newData.process;
                 currentData.str_bak = newData.str_bak;
                 currentData.str_out = newData.str_out;
@@ -972,6 +1057,9 @@
             }
             
             document.getElementById('esp32-status').className = 'w-2 h-2 rounded-full status-online ' + (currentData.online ? 'bg-green-500' : 'bg-red-500');
+            
+            // === ПРОВЕРКА АВАРИИ ===
+            checkSafetyAlarm();
             
             // === ИНДИКАТОР РЕЖИМА СЕТИ W/A/X ===
             const netBadge = document.getElementById('network-mode-badge');

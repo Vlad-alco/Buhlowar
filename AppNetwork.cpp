@@ -421,12 +421,27 @@ void AppNetwork::handleApiStatus() {
     // --- Статус системы (Safety) ---
     int safetyCode = 0;
     String safetyText = "НОРМА";
-    if (status.safety == SafetyState::WARNING_BOX) { safetyCode = 1; safetyText = "ВНИМАНИЕ"; }
-    else if (status.safety == SafetyState::WARNING_TSA) { safetyCode = 2; safetyText = "АВАРИЯ"; }
-    else if (status.safety == SafetyState::EMERGENCY) { safetyCode = 3; safetyText = "АВАРИЯ"; }
+    String safetyDetail = "";
+    
+    if (status.safety == SafetyState::WARNING_BOX) { 
+        safetyCode = 1; 
+        safetyText = "ВНИМАНИЕ: Перегрев"; 
+        safetyDetail = "Температура корпуса: " + String(status.boxTemp, 1) + "C";
+    }
+    else if (status.safety == SafetyState::WARNING_TSA) { 
+        safetyCode = 2; 
+        safetyText = "АВАРИЯ: TSA"; 
+        safetyDetail = "TSA: " + String(status.currentTsa, 1) + "C (лимит: " + String(configManager->getConfig().tsaLimit, 0) + "C)";
+    }
+    else if (status.safety == SafetyState::EMERGENCY) { 
+        safetyCode = 3; 
+        safetyText = "АВАРИЯ: VREAC"; 
+        safetyDetail = "Температура: " + String(status.currentTsa, 1) + "C";
+    }
     
     json += "\"safety_code\":" + String(safetyCode) + ",";
     json += "\"safety_text\":\"" + safetyText + "\",";
+    json += "\"safety_detail\":\"" + safetyDetail + "\",";
 
     // --- Процесс ---
     json += "\"process\":" + String(processEngine->getActiveProcessType()) + ",";
