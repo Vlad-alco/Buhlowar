@@ -13,9 +13,14 @@ private:
     unsigned long lastSettingsCheckMs = 0;
     unsigned long telemetryIntervalMs = 2000;  // Send telemetry every 2 sec
     unsigned long commandCheckIntervalMs = 2000;  // Check commands every 2 sec
-    unsigned long settingsCheckIntervalMs = 30000;  // Check settings every 30 sec
+    unsigned long settingsCheckIntervalMs = 60000;  // Check settings every 60 sec (увеличено с 30)
     unsigned long settingsLastUpdate = 0;  // Timestamp of last settings update from cloud
     bool skipCertCheck = true;  // Skip certificate verification for simplicity
+    
+    // === РОТАЦИЯ ЗАПРОСОВ: только один запрос за вызов ===
+    // 0 = telemetry, 1 = commands, 2 = settings
+    int nextRequestType = 0;
+    // ====================================================
     
     // Callback for processing commands from cloud
     typedef void (*CommandCallback)(const String& command, const String& params);
@@ -101,7 +106,7 @@ public:
         String url = serverUrl + "?commands=1";
         
         http.begin(client, url);
-        http.setTimeout(2000);  // 2 сек таймаут (уменьшено с 5 сек)
+        http.setTimeout(2000);  // 2 сек таймаут
         String authHeader = "Bearer " + apiKey;
         http.addHeader("Authorization", authHeader.c_str());
         
@@ -111,13 +116,13 @@ public:
             String response = http.getString();
             http.end();
             
-            // Parse response
+            // Parse response if contains commands
             // Expected: {"commands": [{"command": "NAME", "params": {...}}, ...]}
             if (response.indexOf("\"commands\"") != -1) {
-                // Simple parsing - extract commands array
                 parseCommands(response);
-                return true;
             }
+            // Возвращаем true при любом успешном запросе (даже без команд)
+            return true;
         } else {
             if (httpCode == -1) {
                 Serial.println("[Cloud] Command check failed: Timeout/Connection error");
@@ -143,7 +148,7 @@ public:
         String url = serverUrl + "?settings=1";
         
         http.begin(client, url);
-        http.setTimeout(2000);  // 2 сек таймаут (уменьшено с 5 сек)
+        http.setTimeout(2000);  // 2 сек таймаут
         String authHeader = "Bearer " + apiKey;
         http.addHeader("Authorization", authHeader.c_str());
         
@@ -192,9 +197,10 @@ public:
                         String settingsJson = response.substring(jsonStart, jsonEnd);
                         onSettings(settingsJson);
                     }
-                    return true;
                 }
             }
+            // Возвращаем true при любом успешном запросе
+            return true;
         } else {
             Serial.printf("[Cloud] Settings check failed: %d\n", httpCode);
             http.end();
@@ -207,24 +213,40 @@ public:
     }
     
     // Call this periodically from main loop
+    // ВАЖНО: Только ОДИН запрос за вызов для предотвращения долгих блокировок loop()
+    // Максимальная блокировка: 2 сек (вместо 6 сек при трёх запросах одновременно)
     void update(const String& telemetryJson) {
         if (!isConfigured()) return;
         
         unsigned long now = millis();
         
-        // Send telemetry
-        if (now - lastTelemetryMs >= telemetryIntervalMs) {
-            sendTelemetry(telemetryJson);
-        }
-        
-        // Check commands
-        if (now - lastCommandCheckMs >= commandCheckIntervalMs) {
-            checkCommands();
-        }
-        
-        // Check settings
-        if (now - lastSettingsCheckMs >= settingsCheckIntervalMs) {
-            checkSettings();
+        // Ротация запросов: проверяем только один тип за вызов
+        switch (nextRequestType) {
+            case 0: // Telemetry
+                if (now - lastTelemetryMs >= telemetryIntervalMs) {
+                    sendTelemetry(telemetryJson);
+                    // lastTelemetryMs обновляется внутри sendTelemetry при успехе
+                }
+                nextRequestType = 1;
+                break;
+                
+            case 1: // Commands
+                if (now - lastCommandCheckMs >= commandCheckIntervalMs) {
+                    if (checkCommands()) {
+                        lastCommandCheckMs = now;
+                    }
+                }
+                nextRequestType = 2;
+                break;
+                
+            case 2: // Settings
+                if (now - lastSettingsCheckMs >= settingsCheckIntervalMs) {
+                    if (checkSettings()) {
+                        lastSettingsCheckMs = now;
+                    }
+                }
+                nextRequestType = 0; // Возвращаемся к telemetry
+                break;
         }
     }
     
