@@ -114,99 +114,186 @@
 
         /* ============================================================
            АДАПТИВНОСТЬ: CSS MEDIA QUERIES
-           Поддержка: телефон, планшет, ПК, горизонтальный режим
+           Поддержка: телефон (портрет/ландшафт), планшет, ПК
            ============================================================ */
+
+        /* --- Базовая адаптация gauge-контейнера --- */
+        #gaugeCanvas { display: block; }
+
+        /* --- Шапка мониторинга не переносится --- */
+        #page-monitoring > .flex.items-center.justify-between {
+            flex-wrap: nowrap !important;
+        }
 
         /* ----- МОБИЛЬНЫЙ ТЕЛЕФОН (портрет, до 480px) ----- */
         @media (max-width: 480px) {
-            /* Главное меню: 1 колонка вместо 2 */
             #page-main .grid-cols-2 { grid-template-columns: 1fr !important; }
-            
-            /* Gauge компактно: 140px вместо 208px */
-            .w-52, .h-52 { width: 8.75rem !important; height: 8.75rem !important; }
-            
-            /* Блок температур компактно */
-            .w-20 { width: 4.5rem !important; }
-            .h-52 { height: 8.75rem !important; }
-            
-            /* Уменьшить отступы */
-            .p-4 { padding: 0.75rem !important; }
-            .p-6 { padding: 1rem !important; }
-            .mb-4 { margin-bottom: 0.75rem !important; }
-            
-            /* Кнопки главного меню компактнее */
-            #page-main button.bg-gray-800 { padding: 1rem !important; }
-            
-            /* Шапка компактнее */
-            header { padding: 0.5rem !important; }
-            header .gap-3 { gap: 0.5rem !important; }
-        }
 
-        /* ----- МОБИЛЬНЫЙ ТЕЛЕФОН (ландшафт, высота до 500px) ----- */
-        @media (orientation: landscape) and (max-height: 500px) {
-            /* Компактный режим для горизонтального просмотра */
-            .p-2 { padding: 0.25rem !important; }
+            /* Canvas gauge: масштабируется по контейнеру */
+            #gaugeCanvas { width: 100% !important; height: auto !important; }
+
+            /* Gauge-контейнер: auto-height */
+            #page-monitoring .relative.w-52.h-52,
+            #page-monitoring [class*="w-52"][class*="h-52"] {
+                width: 140px !important; height: auto !important; min-height: unset !important;
+            }
+
+            /* Колонка температур: auto-height, flex выравнивает */
+            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
+            #page-monitoring .flex.flex-col.justify-between.h-52 {
+                height: auto !important; min-height: unset !important; width: 72px !important;
+            }
+
+            /* Убрать mt-10 на внутреннем flex gauge */
+            #page-monitoring .flex-1.flex.items-center.justify-center.gap-2.mt-10 {
+                margin-top: 0.25rem !important;
+            }
+
+            /* Блок барометра компактнее */
+            #page-monitoring .glass-card.w-20.flex.flex-col { width: 56px !important; }
+
+            #center-time-val { font-size: 0.875rem !important; }
+
+            #page-monitoring .temp-tsa,
+            #page-monitoring .temp-tsar,
+            #page-monitoring .temp-tank,
+            #page-monitoring .temp-aqua { font-size: 0.8rem !important; }
+
             .p-4 { padding: 0.5rem !important; }
             .p-6 { padding: 0.75rem !important; }
             .mb-4 { margin-bottom: 0.5rem !important; }
-            .space-y-4 > * + * { margin-top: 0.5rem !important; }
-            
-            /* Gauge компактно: 112px */
-            .w-52, .h-52 { width: 7rem !important; height: 7rem !important; }
-            
-            /* Блок температур компактно */
-            .w-20 { width: 3.5rem !important; }
-            
-            /* Шапка компактно */
-            header { padding: 0.5rem !important; }
-            header .w-10 { width: 2rem !important; height: 2rem !important; }
+            .p-2 { padding: 0.25rem !important; }
+            .gap-2 { gap: 0.25rem !important; }
+            .space-y-4 > * + * { margin-top: 0.25rem !important; }
+
+            #page-main button.bg-gray-800 { padding: 0.75rem !important; }
+
+            header { padding: 0.35rem 0.5rem !important; }
+            header .gap-3 { gap: 0.35rem !important; }
+            header .w-10 { width: 1.75rem !important; height: 1.75rem !important; }
             header .w-5 { width: 1rem !important; height: 1rem !important; }
-            
-            /* Верхняя панель управления компактно */
+            header .ml-1 { margin-left: 0.25rem !important; }
+            header .gap-6 { gap: 0.5rem !important; }
+            header .w-6 { width: 1.25rem !important; height: 1.25rem !important; }
+
+            .grid-cols-8 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+            .text-xs { font-size: 0.65rem !important; }
+            .text-sm { font-size: 0.75rem !important; }
+            .text-xl { font-size: 1rem !important; }
+            h1.text-lg { font-size: 0.85rem !important; }
+        }
+
+        /* ----- МОБИЛЬНЫЙ ТЕЛЕФОН (ландшафт, высота до 700px) ----- */
+        @media (orientation: landscape) and (max-height: 700px) {
+            .p-2 { padding: 0.2rem !important; }
+            .p-4 { padding: 0.35rem !important; }
+            .p-6 { padding: 0.5rem !important; }
+            .mb-4 { margin-bottom: 0.25rem !important; }
+            .mb-2 { margin-bottom: 0.15rem !important; }
+            .space-y-4 > * + * { margin-top: 0.15rem !important; }
+            .gap-2 { gap: 0.2rem !important; }
+
+            #gaugeCanvas { width: 100% !important; height: auto !important; }
+
+            #page-monitoring .relative.w-52.h-52,
+            #page-monitoring [class*="w-52"][class*="h-52"] {
+                width: 112px !important; height: auto !important; min-height: unset !important;
+            }
+
+            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
+            #page-monitoring .flex.flex-col.justify-between.h-52 {
+                height: auto !important; min-height: unset !important; width: 56px !important;
+            }
+
+            #page-monitoring .flex-1.flex.items-center.justify-center.gap-2.mt-10 {
+                margin-top: 0 !important;
+            }
+
+            #page-monitoring .glass-card.w-20.flex.flex-col { width: 48px !important; }
+
+            #center-time-val { font-size: 0.7rem !important; }
+
+            #page-monitoring .temp-tsa,
+            #page-monitoring .temp-tsar,
+            #page-monitoring .temp-tank,
+            #page-monitoring .temp-aqua { font-size: 0.65rem !important; }
+
+            header { padding: 0.25rem 0.4rem !important; }
+            header .w-10 { width: 1.5rem !important; height: 1.5rem !important; }
+            header .w-5 { width: 0.75rem !important; height: 0.75rem !important; }
+            header .gap-3 { gap: 0.25rem !important; }
+            header .ml-1 { margin-left: 0.15rem !important; }
+            header .gap-6 { gap: 0.35rem !important; }
+            header .w-6 { width: 1rem !important; height: 1rem !important; }
+            header .flex-shrink-0 { flex-shrink: 1 !important; }
+
             .grid-cols-8 { grid-template-columns: repeat(8, minmax(0, 1fr)) !important; }
-            .w-8 { width: 1.75rem !important; height: 1.75rem !important; }
+            .w-8 { width: 1.5rem !important; height: 1.5rem !important; }
+
+            .text-xs { font-size: 0.55rem !important; }
+            .text-sm { font-size: 0.65rem !important; }
+            .text-xl { font-size: 0.85rem !important; }
+            .text-lg { font-size: 0.85rem !important; }
+            h1.text-lg { font-size: 0.75rem !important; }
+            .text-base { font-size: 0.7rem !important; }
         }
 
         /* ----- ПЛАНШЕТ (640px - 1023px) ----- */
         @media (min-width: 640px) and (max-width: 1023px) {
-            /* Gauge немного больше: 192px */
-            .w-52, .h-52 { width: 12rem !important; height: 12rem !important; }
-            
-            /* Блок температур шире */
+            #gaugeCanvas { width: 100% !important; height: auto !important; }
+
+            #page-monitoring .relative.w-52.h-52,
+            #page-monitoring [class*="w-52"][class*="h-52"] {
+                width: 192px !important; height: auto !important; min-height: unset !important;
+            }
+
+            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
+            #page-monitoring .flex.flex-col.justify-between.h-52 {
+                height: auto !important; min-height: unset !important; width: 80px !important;
+            }
+
             .w-20 { width: 5rem !important; }
-            
-            /* Увеличить шрифты */
             .text-xs { font-size: 0.75rem !important; }
         }
 
         /* ----- ПК / НОУТБУК (1024px+) ----- */
         @media (min-width: 1024px) {
-            /* Расширить главный контейнер */
             .max-w-3xl { max-width: 1024px !important; }
-            
-            /* Gauge больше: 240px */
-            .w-52, .h-52 { width: 15rem !important; height: 15rem !important; }
-            
-            /* Блок температур шире */
+
+            #gaugeCanvas { width: 100% !important; height: auto !important; }
+
+            #page-monitoring .relative.w-52.h-52,
+            #page-monitoring [class*="w-52"][class*="h-52"] {
+                width: 240px !important; height: auto !important; min-height: unset !important;
+            }
+
+            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
+            #page-monitoring .flex.flex-col.justify-between.h-52 {
+                height: auto !important; min-height: unset !important; width: 96px !important;
+            }
+
             .w-20 { width: 6rem !important; }
-            
-            /* Увеличить шрифты */
             .text-xs { font-size: 0.8rem !important; }
             .text-sm { font-size: 0.95rem !important; }
-            
-            /* Увеличить отступы */
             .p-4 { padding: 1.25rem !important; }
         }
 
         /* ----- БОЛЬШОЙ МОНИТОР (1536px+) ----- */
         @media (min-width: 1536px) {
-            /* Расширить контейнер */
             .max-w-3xl { max-width: 1280px !important; }
-            
-            /* Gauge ещё больше: 288px */
-            .w-52, .h-52 { width: 18rem !important; height: 18rem !important; }
-            
-            /* Блок температур шире */
+
+            #gaugeCanvas { width: 100% !important; height: auto !important; }
+
+            #page-monitoring .relative.w-52.h-52,
+            #page-monitoring [class*="w-52"][class*="h-52"] {
+                width: 288px !important; height: auto !important; min-height: unset !important;
+            }
+
+            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
+            #page-monitoring .flex.flex-col.justify-between.h-52 {
+                height: auto !important; min-height: unset !important; width: 112px !important;
+            }
+
             .w-20 { width: 7rem !important; }
         }
     </style>
