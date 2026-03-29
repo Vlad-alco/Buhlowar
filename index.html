@@ -111,191 +111,6 @@
         .net-mode-w { background-color: rgba(74, 222, 128, 0.2); color: var(--green); border: 1px solid #14532d; }
         .net-mode-a { background-color: rgba(245, 158, 11, 0.2); color: var(--amber); border: 1px solid #92400e; }
         .net-mode-x { background-color: rgba(107, 114, 128, 0.2); color: var(--text-dim); border: 1px solid var(--border); }
-
-        /* ============================================================
-           АДАПТИВНОСТЬ: CSS MEDIA QUERIES
-           Поддержка: телефон (портрет/ландшафт), планшет, ПК
-           ============================================================ */
-
-        /* --- Базовая адаптация gauge-контейнера --- */
-        #gaugeCanvas { display: block; }
-
-        /* --- Шапка мониторинга не переносится --- */
-        #page-monitoring > .flex.items-center.justify-between {
-            flex-wrap: nowrap !important;
-        }
-
-        /* ----- МОБИЛЬНЫЙ ТЕЛЕФОН (портрет, до 480px) ----- */
-        @media (max-width: 480px) {
-            #page-main .grid-cols-2 { grid-template-columns: 1fr !important; }
-
-            /* Canvas gauge: масштабируется по контейнеру */
-            #gaugeCanvas { width: 100% !important; height: auto !important; }
-
-            /* Gauge-контейнер: auto-height */
-            #page-monitoring .relative.w-52.h-52,
-            #page-monitoring [class*="w-52"][class*="h-52"] {
-                width: 140px !important; height: auto !important; min-height: unset !important;
-            }
-
-            /* Колонка температур: auto-height, flex выравнивает */
-            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
-            #page-monitoring .flex.flex-col.justify-between.h-52 {
-                height: auto !important; min-height: unset !important; width: 72px !important;
-            }
-
-            /* Убрать mt-10 на внутреннем flex gauge */
-            #page-monitoring .flex-1.flex.items-center.justify-center.gap-2.mt-10 {
-                margin-top: 0.25rem !important;
-            }
-
-            /* Блок барометра компактнее */
-            #page-monitoring .glass-card.w-20.flex.flex-col { width: 56px !important; }
-
-            #center-time-val { font-size: 0.875rem !important; }
-
-            #page-monitoring .temp-tsa,
-            #page-monitoring .temp-tsar,
-            #page-monitoring .temp-tank,
-            #page-monitoring .temp-aqua { font-size: 0.8rem !important; }
-
-            .p-4 { padding: 0.5rem !important; }
-            .p-6 { padding: 0.75rem !important; }
-            .mb-4 { margin-bottom: 0.5rem !important; }
-            .p-2 { padding: 0.25rem !important; }
-            .gap-2 { gap: 0.25rem !important; }
-            .space-y-4 > * + * { margin-top: 0.25rem !important; }
-
-            #page-main button.bg-gray-800 { padding: 0.75rem !important; }
-
-            header { padding: 0.35rem 0.5rem !important; }
-            header .gap-3 { gap: 0.35rem !important; }
-            header .w-10 { width: 1.75rem !important; height: 1.75rem !important; }
-            header .w-5 { width: 1rem !important; height: 1rem !important; }
-            header .ml-1 { margin-left: 0.25rem !important; }
-            header .gap-6 { gap: 0.5rem !important; }
-            header .w-6 { width: 1.25rem !important; height: 1.25rem !important; }
-
-            /* Инфопанель: 5 колонок, компактно */
-            .text-xs { font-size: 0.65rem !important; }
-            .text-sm { font-size: 0.75rem !important; }
-            .text-xl { font-size: 1rem !important; }
-            h1.text-lg { font-size: 0.85rem !important; }
-        }
-
-        /* ----- МОБИЛЬНЫЙ ТЕЛЕФОН (ландшафт, высота до 700px) ----- */
-        @media (orientation: landscape) and (max-height: 700px) {
-            .p-2 { padding: 0.2rem !important; }
-            .p-4 { padding: 0.35rem !important; }
-            .p-6 { padding: 0.5rem !important; }
-            .mb-4 { margin-bottom: 0.25rem !important; }
-            .mb-2 { margin-bottom: 0.15rem !important; }
-            .space-y-4 > * + * { margin-top: 0.15rem !important; }
-            .gap-2 { gap: 0.2rem !important; }
-
-            #gaugeCanvas { width: 100% !important; height: auto !important; }
-
-            #page-monitoring .relative.w-52.h-52,
-            #page-monitoring [class*="w-52"][class*="h-52"] {
-                width: 112px !important; height: auto !important; min-height: unset !important;
-            }
-
-            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
-            #page-monitoring .flex.flex-col.justify-between.h-52 {
-                height: auto !important; min-height: unset !important; width: 56px !important;
-            }
-
-            #page-monitoring .flex-1.flex.items-center.justify-center.gap-2.mt-10 {
-                margin-top: 0 !important;
-            }
-
-            #page-monitoring .glass-card.w-20.flex.flex-col { width: 48px !important; }
-
-            #center-time-val { font-size: 0.7rem !important; }
-
-            #page-monitoring .temp-tsa,
-            #page-monitoring .temp-tsar,
-            #page-monitoring .temp-tank,
-            #page-monitoring .temp-aqua { font-size: 0.65rem !important; }
-
-            header { padding: 0.25rem 0.4rem !important; }
-            header .w-10 { width: 1.5rem !important; height: 1.5rem !important; }
-            header .w-5 { width: 0.75rem !important; height: 0.75rem !important; }
-            header .gap-3 { gap: 0.25rem !important; }
-            header .ml-1 { margin-left: 0.15rem !important; }
-            header .gap-6 { gap: 0.35rem !important; }
-            header .w-6 { width: 1rem !important; height: 1rem !important; }
-            header .flex-shrink-0 { flex-shrink: 1 !important; }
-
-            /* Инфопанель уже grid-cols-5 */
-            .w-8 { width: 1.5rem !important; height: 1.5rem !important; }
-
-            .text-xs { font-size: 0.55rem !important; }
-            .text-sm { font-size: 0.65rem !important; }
-            .text-xl { font-size: 0.85rem !important; }
-            .text-lg { font-size: 0.85rem !important; }
-            h1.text-lg { font-size: 0.75rem !important; }
-            .text-base { font-size: 0.7rem !important; }
-        }
-
-        /* ----- ПЛАНШЕТ (640px - 1023px) ----- */
-        @media (min-width: 640px) and (max-width: 1023px) {
-            #gaugeCanvas { width: 100% !important; height: auto !important; }
-
-            #page-monitoring .relative.w-52.h-52,
-            #page-monitoring [class*="w-52"][class*="h-52"] {
-                width: 192px !important; height: auto !important; min-height: unset !important;
-            }
-
-            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
-            #page-monitoring .flex.flex-col.justify-between.h-52 {
-                height: auto !important; min-height: unset !important; width: 80px !important;
-            }
-
-            .w-20 { width: 5rem !important; }
-            .text-xs { font-size: 0.75rem !important; }
-        }
-
-        /* ----- ПК / НОУТБУК (1024px+) ----- */
-        @media (min-width: 1024px) {
-            .max-w-3xl { max-width: 1024px !important; }
-
-            #gaugeCanvas { width: 100% !important; height: auto !important; }
-
-            #page-monitoring .relative.w-52.h-52,
-            #page-monitoring [class*="w-52"][class*="h-52"] {
-                width: 240px !important; height: auto !important; min-height: unset !important;
-            }
-
-            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
-            #page-monitoring .flex.flex-col.justify-between.h-52 {
-                height: auto !important; min-height: unset !important; width: 96px !important;
-            }
-
-            .w-20 { width: 6rem !important; }
-            .text-xs { font-size: 0.8rem !important; }
-            .text-sm { font-size: 0.95rem !important; }
-            .p-4 { padding: 1.25rem !important; }
-        }
-
-        /* ----- БОЛЬШОЙ МОНИТОР (1536px+) ----- */
-        @media (min-width: 1536px) {
-            .max-w-3xl { max-width: 1280px !important; }
-
-            #gaugeCanvas { width: 100% !important; height: auto !important; }
-
-            #page-monitoring .relative.w-52.h-52,
-            #page-monitoring [class*="w-52"][class*="h-52"] {
-                width: 288px !important; height: auto !important; min-height: unset !important;
-            }
-
-            #page-monitoring .flex.flex-col.justify-between.gap-1.w-20.h-52,
-            #page-monitoring .flex.flex-col.justify-between.h-52 {
-                height: auto !important; min-height: unset !important; width: 112px !important;
-            }
-
-            .w-20 { width: 7rem !important; }
-        }
     </style>
 </head>
 <body class="min-h-screen bg-gray-900 text-gray-200">
@@ -335,12 +150,14 @@
 
             <!-- Top Control Bar -->
             <div class="bg-gray-800 rounded-lg p-2 mb-4 shadow-lg">
-                <div class="grid grid-cols-5 gap-1 items-center text-xs">
+                <div class="grid grid-cols-8 gap-1 items-center text-xs">
                     <button onclick="showPage('settings')" class="w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center"><i data-lucide="settings" class="w-4 h-4 text-gray-300"></i></button>
                     <button onclick="testAlarm()" class="w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center" title="Test alarm"><i data-lucide="volume-2" class="w-4 h-4 text-gray-300"></i></button>
-                    <div class="text-center"><div class="text-green-400 font-bold" id="power-display">3000</div><span class="text-gray-500 text-[10px]">W</span></div>
-
-                    <!-- Температура и Влажность -->
+                    
+                    <div class="text-center col-span-2"><div class="text-blue-400 font-bold" id="pressure-value">760</div><span class="text-gray-500 text-[10px]">mm Hg</span></div>
+                    <div class="text-center"><div class="text-green-400 font-bold" id="power-display">3000</div><span class="text-gray-500 text-[10px]">PWR</span></div>
+                    
+                    <!-- ИСПРАВЛЕНО: Температура и Влажность -->
                     <div class="text-center">
                         <div class="flex items-center justify-center gap-0.5">
                             <span class="text-orange-400 font-bold" id="box-temp-value">--</span>
@@ -349,8 +166,8 @@
                         </div>
                         <span class="text-gray-500 text-[10px]">Box C</span>
                     </div>
-
-                    <div class="text-center">
+                    
+                    <div class="text-center col-span-2">
                         <div class="text-blue-400 font-bold" id="humidity-value">--</div>
                         <span class="text-gray-500 text-[10px]">ВЛАЖН %</span>
                     </div>
@@ -397,7 +214,7 @@
                                     <div class="text-xl font-bold text-white" id="center-time-val">00:00</div>
                                 </div>
                             </div>
-                            
+
                             <div class="flex flex-col justify-between gap-1 text-xs w-20 h-52">
                                 <div class="bg-gray-900 p-1.5 rounded flex flex-col justify-center flex-1">
                                     <div class="temp-tsa font-bold text-base leading-tight truncate"><span id="val-tsa-m">--</span>°</div>
@@ -437,9 +254,10 @@
                                         <div class="text-base font-bold text-cyan" id="press-val-m">760</div>
                                         <div class="text-[8px] text-gray-500">мм.рт.ст</div>
                                     </div>
-                                    <div class="text-center mt-1 text-[9px]">
-                                        <span id="press-corr-m" class="text-amber">0.0</span>°
-                                    </div>
+                                 <!-- ИСПРАВЛЕНО: Поправка с +/- и цветом -->
+                                 <div class="text-center mt-1 text-[9px]">
+                                    <span id="press-corr-m" class="text-amber">0.0</span>°
+                                 </div>
                                  </div>
                             </div>
                         </div>
@@ -448,16 +266,16 @@
                     <!-- Row 2: РАСЧЕТЫ -->
                     <div class="flex gap-2 items-stretch justify-center w-full">
                         <div class="glass-card rounded-lg p-4 flex-1 flex flex-col">
-                            <h3 class="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">РАСЧЕТЫ (расч/тек)</h3>
+                            <h3 class="text-xs font-bold text-gray-100 mb-2 uppercase tracking-wider">РАСЧЕТЫ (расч/тек)</h3>
                             
                             <!-- ГОЛОВЫ -->
                             <div class="mb-2 border-b border-gray-700 pb-2">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 font-bold text-xs">ГОЛОВЫ: <span id="mon-head-total" class="text-amber">--</span>/<span id="mon-head-done" class="text-green">--</span> мл</span>
+                                    <span class="text-gray-200 font-bold text-xs">ГОЛОВЫ: <span id="mon-head-total" class="text-amber">--</span>/<span id="mon-head-done" class="text-green">--</span> мл</span>
                                     <span class="text-cyan font-bold text-xs"><span id="mon-head-speed-calc">--</span>/<span id="mon-head-speed-real" class="text-green">--</span> мл/ч</span>
                                 </div>
                                 <div class="flex justify-between items-center mt-1">
-                                    <span class="text-[10px] text-gray-400">Коррекция:</span>
+                                    <span class="text-[10px] text-gray-400">КОРРЕКЦИЯ:</span>
                                     <div class="flex items-center gap-1">
                                         <button onclick="adjCfg('speedHeadCorr', -1)" class="w-5 h-5 bg-gray-700 hover:bg-gray-600 rounded text-[10px] font-bold">-</button>
                                         <span id="cfg-speedHeadCorr" class="text-xs font-bold w-8 text-center">100</span>
@@ -466,26 +284,26 @@
                                     </div>
                                 </div>
                                 <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                                    <span>Метод: <span id="mon-head-method">--</span></span>
-                                    <span>Подэтап: <span id="mon-head-substage" class="text-amber">--</span></span>
+                                    <span>МЕТОД: <span id="mon-head-method">--</span></span>
+                                    <span>ПОДЭТАП: <span id="mon-head-substage" class="text-amber">--</span></span>
                                 </div>
                                 <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                                    <span>Объём подэтапа: <span id="mon-head-vol-target">--</span>/<span id="mon-head-vol" class="text-green">--</span> мл</span>
-                                    <span>Время: <span id="mon-head-remain" class="text-cyan">--:--</span></span>
+                                    <span>ОБЪЁМ ПОДЭТАПА: <span id="mon-head-vol-target">--</span>/<span id="mon-head-vol" class="text-green">--</span> мл</span>
+                                    <span>ВРЕМЯ: <span id="mon-head-remain" class="text-cyan">--:--</span></span>
                                 </div>
                             </div>
 
                             <!-- ТЕЛО -->
                             <div class="mb-2 border-b border-gray-700 pb-2">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 font-bold text-xs">ТЕЛО</span>
+                                    <span class="text-gray-200 font-bold text-xs">ТЕЛО</span>
                                     <span class="text-green font-bold text-xs"><span id="mon-body-speed-calc">--</span>/<span id="mon-body-speed-real" class="text-cyan">--</span> мл/ч</span>
                                 </div>
                                 <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                                    <span>Отобрано: <span id="body-volume" class="text-green">--</span> мл</span>
+                                    <span>ОТОБРАНО: <span id="body-volume" class="text-green">--</span> мл</span>
                                 </div>
                                 <div class="flex justify-between items-center mt-1">
-                                    <span class="text-[10px] text-gray-400">Коррекция:</span>
+                                    <span class="text-[10px] text-gray-400">КОРРЕКЦИЯ:</span>
                                     <div class="flex items-center gap-1">
                                         <button onclick="adjCfg('speedBodyCorr', -1)" class="w-5 h-5 bg-gray-700 hover:bg-gray-600 rounded text-[10px] font-bold">-</button>
                                         <span id="cfg-speedBodyCorr" class="text-xs font-bold w-8 text-center">100</span>
@@ -494,12 +312,12 @@
                                     </div>
                                 </div>
                                 <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                                    <span>Метод: <span id="mon-body-method">--</span></span>
-                                    <span>Прогноз: <span id="mon-body-predict" class="text-cyan">--</span> мл</span>
+                                    <span>МЕТОД: <span id="mon-body-method">--</span></span>
+                                    <span>ПРОГНОЗ: <span id="mon-body-predict" class="text-cyan">--</span> мл</span>
                                 </div>
                                 <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                                    <span>Цикл: <span id="mon-body-cycle">--</span></span>
-                                    <span>Осталось: <span id="mon-body-remain" class="text-cyan">--:--</span></span>
+                                    <span>ЦИКЛ: <span id="mon-body-cycle">--</span></span>
+                                    <span>ОСТАЛОСЬ: <span id="mon-body-remain" class="text-cyan">--:--</span></span>
                                 </div>
                             </div>
                             
@@ -537,22 +355,29 @@
                         </div>
                     </div>
                     <!-- Settings -->
+                     <!-- Settings -->
                     <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
                         <h3 class="text-md font-semibold mb-3 text-blue-400 border-b border-gray-700 pb-2">Настройки</h3>
-                        <div class="space-y-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                                                <div>
                              <div class="setting-row"><label>PAЗГОН ДО (°C)</label><div class="setting-inputs"><button onclick="adjCfg('razgonTemp', -1)">-</button><span id="cfg-razgonTemp">78</span><button onclick="adjCfg('razgonTemp', 1)">+</button></div></div>
                              <div class="setting-row"><label>БАКСТОП (°C)</label><div class="setting-inputs"><button onclick="adjCfg('bakStopTemp', -1)">-</button><span id="cfg-bakStopTemp">99</span><button onclick="adjCfg('bakStopTemp', 1)">+</button></div></div>
                              <div class="setting-row"><label>СМЕНА ТАРЫ В КУБЕ (°C)</label><div class="setting-inputs"><button onclick="adjCfg('midterm', -1)">-</button><span id="cfg-midterm">0</span><button onclick="adjCfg('midterm', 1)">+</button></div></div>
                              <div class="setting-row"><label>СМЕНА ТАРЫ В ОТБОРЕ (%)</label><div class="setting-inputs"><button onclick="adjCfg('midterm_abv', -1)">-</button><span id="cfg-midterm_abv">0</span><button onclick="adjCfg('midterm_abv', 1)">+</button></div></div>
                              <div class="setting-row"><label>ТИП НАГРЕВА</label><div class="setting-inputs"><button id="btn-heaterType" onclick="toggleCfg('heaterType')" class="bool-btn">TEN</button></div></div>
-                             <div class="setting-row"><label>РАЗГОН НА ВСЮ</label><div class="setting-inputs"><button id="btn-fullPwr" onclick="toggleCfg('fullPwr')" class="bool-btn">NO</button></div></div>
+                        </div>     
+                                                <div>    
+                                                         <div class="setting-row"><label>РАЗГОН НА ВСЮ</label><div class="setting-inputs"><button id="btn-fullPwr" onclick="toggleCfg('fullPwr')" class="bool-btn">NO</button></div></div>
                              <div class="setting-row"><label>ИСП.КЛ.ОТБОРА</label><div class="setting-inputs"><button id="btn-valveuse" onclick="toggleCfg('valveuse')" class="bool-btn">NO</button></div></div>
                              <div class="setting-row"><label>ИСП. МЕШАЛКА </label><div class="setting-inputs"><button id="btn-mixerEnabled" onclick="toggleCfg('mixerEnabled')" class="bool-btn">NO</button></div></div>
                              <div class="setting-row"><label>МЕШАЛКА ВКЛ  (s)</label><div class="setting-inputs"><button onclick="adjCfg('mixerOnTime', -5)">-</button><span id="cfg-mixerOnTime">30</span><button onclick="adjCfg('mixerOnTime', 5)">+</button></div></div>
-                             <div class="setting-row"><label>МЕШАЛКА ВЫКЛ (s)</label><div class="setting-inputs"><button onclick="adjCfg('mixerOffTime', -5)">-</button><span id="cfg-mixerOffTime">1</span><button onclick="adjCfg('mixerOffTime', 5)">+</button></div></div>
+                             
+                                                        <div class="setting-row"><label>МЕШАЛКА ВЫКЛ (s)</label><div class="setting-inputs"><button onclick="adjCfg('mixerOffTime', -5)">-</button><span id="cfg-mixerOffTime">1</span><button onclick="adjCfg('mixerOffTime', 5)">+</button></div></div>
                         </div>
+                                                </div>
                         <button onclick="saveSettings('dist')" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold text-sm">СОХРАНИТЬ</button>
-                    </div>
+                    
+                     </div>
                 </div>
 
                 <!-- RECTIFICATION PAGE -->
@@ -599,13 +424,14 @@
                                 <div class="setting-row"><label>ЦИКЛЫ ОТБОРА</label><div class="setting-inputs"><button onclick="adjCfg('cycleLim', -1)">-</button><span id="cfg-cycleLim">1</span><button onclick="adjCfg('cycleLim', 1)">+</button></div></div>
                                 <div class="setting-row"><label>ГИСТЕРЕЗИС</label><div class="setting-inputs"><button onclick="adjCfg('histeresis', -0.06)">-</button><span id="cfg-histeresis">0.24</span><button onclick="adjCfg('histeresis', 0.06)">+</button></div></div>
                                 <div class="setting-row"><label>ДЭЛЬТА </label><div class="setting-inputs"><button onclick="adjCfg('delta', -0.06)">-</button><span id="cfg-delta">0.12</span><button onclick="adjCfg('delta', 0.06)">+</button></div></div>
-                                <div class="setting-row"><label>ТИП НАГРЕВА</label><div class="setting-inputs"><button id="btn-heaterType_rect" onclick="toggleCfg('heaterType')" class="bool-btn">TEN</button></div></div>
-                                <div class="setting-row"><label>ИСП.КЛ.ГОЛОВ</label><div class="setting-inputs"><button id="btn-useHeadValve" onclick="toggleCfg('useHeadValve')" class="bool-btn">NO</button></div></div>
-                                <div class="setting-row"><label>ТИП.КЛ.ТЕЛО</label><div class="setting-inputs"><button id="btn-bodyValveNC" onclick="toggleCfg('bodyValveNC')" class="bool-btn">NO</button></div></div>
-                                <div class="setting-row"><label>МЕТОД ГОЛОВЫ</label><div class="setting-inputs"><button id="btn-headsTypeKSS" onclick="toggleCfg('headsTypeKSS')" class="bool-btn">ST</button></div></div>
+                                
                             </div>
                              <div>
                                 <div class="setting-row"><label>КАЛИБРОВКА КЛ.</label><div class="setting-inputs"><button id="btn-calibration" onclick="toggleCfg('calibration')" class="bool-btn">NO</button></div></div>
+                                                                <div class="setting-row"><label>ТИП НАГРЕВА</label><div class="setting-inputs"><button id="btn-heaterType_rect" onclick="toggleCfg('heaterType')" class="bool-btn">TEN</button></div></div>
+                                <div class="setting-row"><label>ИСП.КЛ.ГОЛОВ</label><div class="setting-inputs"><button id="btn-useHeadValve" onclick="toggleCfg('useHeadValve')" class="bool-btn">NO</button></div></div>
+                                <div class="setting-row"><label>ТИП.КЛ.ТЕЛО</label><div class="setting-inputs"><button id="btn-bodyValveNC" onclick="toggleCfg('bodyValveNC')" class="bool-btn">NO</button></div></div>
+                                <div class="setting-row"><label>МЕТОД ГОЛОВЫ</label><div class="setting-inputs"><button id="btn-headsTypeKSS" onclick="toggleCfg('headsTypeKSS')" class="bool-btn">ST</button></div></div>
                             </div>
                         </div>
                         <button onclick="saveSettings('rect')" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold text-sm">СОХРАНИТЬ</button>
@@ -741,8 +567,8 @@
                                       <label>РЕЖИМ</label>
                                       <button id="btn-cloudMode" onclick="toggleCloudMode()" class="bool-btn off">ВЫКЛ</button>
                                   </div>
-                                  <div class="setting-row"><label>CLOUD URL</label><input id="cfg-cloudUrl" type="text" class="bg-gray-700 text-white text-xs px-2 py-1 rounded w-48" placeholder="https://control.alcodist.ru/api/api.php" /></div>
-                                  <div class="setting-row"><label>CLOUD KEY</label><input id="cfg-cloudApiKey" type="text" class="bg-gray-700 text-white text-xs px-2 py-1 rounded w-48" placeholder="BUHLO_SECRET_KEY_2026" /></div>
+                                  <div class="setting-row"><label>CLOUD URL</label><input id="cfg-cloudUrl" type="text" class="bg-gray-700 text-white text-xs px-2 py-1 rounded w-48" placeholder="https://.........ru/api/api.php" /></div>
+                                  <div class="setting-row"><label>CLOUD KEY</label><input id="cfg-cloudApiKey" type="text" class="bg-gray-700 text-white text-xs px-2 py-1 rounded w-48" placeholder="SECRET_KEY" /></div>
                                   <p id="cloud-status" class="text-xs text-gray-500 mt-1"></p>
                               </div>
                           </div>
@@ -1048,8 +874,8 @@
             if (banner && bannerText) {
                 banner.classList.remove('hidden');
                 if (cloudMode) {
-                    const age = cloudLastUpdate ? Math.max(0, Math.floor((Date.now()/1000 - cloudLastUpdate))) : '?';
-                    bannerText.textContent = '☁️ ОБЛАЧНЫЙ РЕЖИМ — Подключено. Данные: ' + age + ' сек назад';
+                    const age = cloudLastUpdate ? Math.floor((Date.now()/1000 - cloudLastUpdate)) : '?';
+                    bannerText.textContent = '☁️ ОБЛАКО — Подключено. Данные: ' + age + ' сек назад';
                     banner.className = 'bg-cyan-900 border border-cyan-500 rounded-lg p-2 mb-4 text-center';
                     bannerText.className = 'text-cyan-300 text-sm';
                 } else {
@@ -1061,7 +887,7 @@
             
             if (status) {
                 if (cloudMode) {
-                    const age = cloudLastUpdate ? Math.max(0, Math.floor((Date.now()/1000 - cloudLastUpdate))) : '?';
+                    const age = cloudLastUpdate ? Math.floor((Date.now()/1000 - cloudLastUpdate)) : '?';
                     status.textContent = '☁️ ОБЛАКО: Подключено. Данные: ' + age + ' сек назад';
                     status.style.color = '#4ade80';
                 } else {
@@ -1260,8 +1086,7 @@
             // ====================================
             
             // Время процесса отображается только под диаграммой (center-time-val)
-            const pressureInfoEl = document.getElementById('pressure-value');
-            if (pressureInfoEl) pressureInfoEl.textContent = Math.round(currentData.pressure || 0);
+            document.getElementById('pressure-value').textContent = Math.round(currentData.pressure || 0);
             document.getElementById('power-display').textContent = currentData.power || 0;
             
             // === ШАПКА: Температура и Влажность ===
