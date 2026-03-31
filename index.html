@@ -2308,6 +2308,9 @@
                 // Обновить статус калибровки в интерфейсе
                 updateValveCalibrationStatus();
                 
+                // Автоматически закрыть мастер через 2 секунды
+                setTimeout(closeCalibWizard, 2000);
+                
             } catch(e) {
                 alert('Ошибка сохранения: ' + e);
             }

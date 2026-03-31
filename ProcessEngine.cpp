@@ -415,6 +415,7 @@ outputManager->startBodyValveCycling(cfg.bodyOpenMs * 1000, cfg.bodyCloseMs * 10
        
        // === НОВАЯ КОМАНДА ДЛЯ WEB (Кнопка "ДАЛЕЕ") ===
     if (command == UiCommand::NEXT_STAGE) {
+        Serial.printf("[WebCmd] NEXT_STAGE received, currentStage=%d\n", (int)currentStage);
         if (currentStage == Stage::VALVE_CAL) {
             Serial.println("[Web] VALVE CAL -> SET PW & AS");
             // === ЛОГИРОВАНИЕ ===
