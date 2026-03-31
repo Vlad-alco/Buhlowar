@@ -405,15 +405,7 @@ outputManager->startBodyValveCycling(cfg.bodyOpenMs * 1000, cfg.bodyCloseMs * 10
     }
     // ================================================================
 
-    if (currentStage == Stage::VALVE_CAL) {
-        if (command == UiCommand::DIALOG_YES) valveCalMenu->handleSetButton();
-        else if (command == UiCommand::DIALOG_NO) valveCalMenu->handleBackButton();
-        return EngineResponse::OK; 
-    }
-    // ==============================================================
-    
-       
-       // === НОВАЯ КОМАНДА ДЛЯ WEB (Кнопка "ДАЛЕЕ") ===
+    // === НОВАЯ КОМАНДА ДЛЯ WEB (Кнопка "ДАЛЕЕ") — ДО проверки VALVE_CAL ===
     if (command == UiCommand::NEXT_STAGE) {
         Serial.printf("[WebCmd] NEXT_STAGE received, currentStage=%d\n", (int)currentStage);
         if (currentStage == Stage::VALVE_CAL) {
@@ -436,6 +428,15 @@ outputManager->startBodyValveCycling(cfg.bodyOpenMs * 1000, cfg.bodyCloseMs * 10
         }
         // Можно добавить и для WATER_TEST, если нужно, но там DIALOG_YES
     }
+    // ================================================================
+
+    if (currentStage == Stage::VALVE_CAL) {
+        if (command == UiCommand::DIALOG_YES) valveCalMenu->handleSetButton();
+        else if (command == UiCommand::DIALOG_NO) valveCalMenu->handleBackButton();
+        return EngineResponse::OK;
+    }
+    // ==============================================================
+
     if (currentStage == Stage::GOLOVY_OK) {
         if (command == UiCommand::DIALOG_YES) {
             Serial.println("[Process] GOLOVY OK -> TELO");
