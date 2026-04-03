@@ -1898,14 +1898,11 @@ void ProcessEngine::updateRectWebInfo() {
         float tailsEst = asVol * 0.15f;
         float predictVol = asVol - headsVol - tailsEst;
         
-        // Время = Объём / Скорость (в часах, переводим в секунды)
-        if (speedShpora > 0 && predictVol > 0) {
-            float timeHours = predictVol / speedShpora;
-            int totalSec = (int)(timeHours * 3600.0f);
-            // Вычитаем уже прошедшее время этапа
-            int elapsedSec = currentStatus.stageTimeSec;
-            int remainSec = totalSec - elapsedSec;
-            currentStatus.rectTimeRemaining = (remainSec > 0) ? remainSec : 0;
+        // Остаток = прогноз - уже отобрано, время при текущей скорости
+        float remainVol = predictVol - bodyVolDone;
+        if (speedShpora > 0 && remainVol > 0) {
+            float timeHours = remainVol / speedShpora;
+            currentStatus.rectTimeRemaining = (int)(timeHours * 3600.0f);
         } else {
             currentStatus.rectTimeRemaining = 0;
         }
