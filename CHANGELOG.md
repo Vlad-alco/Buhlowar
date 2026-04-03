@@ -16,6 +16,7 @@
 - **NEXT_STAGE после калибровки:** Исправлен баг — блок `if (currentStage == VALVE_CAL) { return OK; }` стоял ДО обработчика `NEXT_STAGE` и глотал команду кнопки ДАЛЕЕ. Обработчик `NEXT_STAGE` перенесён перед блоком `VALVE_CAL`.
 - **Команды калибровки из Web:** Исправлен баг — команды `CALIB_START_DRY`, `CALIB_START_CAPACITY`, `CALIB_CANCEL` перехватывались ранним `return` в блоке `VALVE_CAL`. Перенесены ДО проверки этапа.
 - **Отладка NEXT_STAGE:** Добавлен лог `[WebCmd] NEXT_STAGE received, currentStage=X` для диагностики переходов.
+- **Пересчёт оставшегося времени ТЕЛО (Шпора):** Старая формула `(predictVol / speedShpora) - elapsedSec` завышала время при снижении скорости, т.к. предполагала что текущая (сниженная) скорость была с самого начала. Новая формула `(predictVol - bodyVolDone) / speedShpora` правильно считает остаток объёма при текущей скорости.
 
 ### CloudManager.h — Облачный менеджер
 
