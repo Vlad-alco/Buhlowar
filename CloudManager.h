@@ -1,99 +1,107 @@
 #ifndef CLOUD_MANAGER_H
 #define CLOUD_MANAGER_H
 
+#include <Arduino.h>
+#include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
+#include <cstring>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/queue.h>
+#include <freertos/semphr.h>
+
+// ============================================================================
+// CloudManager — облачное подключение с FreeRTOS задачей на core 0
+// ============================================================================
+// update() НЕ делает HTTP-запросов. Только:
+//   1. Копирует телеметрию в общий буфер через mutex (~2 мкс)
+//   2. Читает очереди команд/настроек и вызывает callbacks
+//
+// Все HTTP-запросы выполняются в отдельной задаче на core 0 (там WiFi стек).
+// При падении сервера — блокируется ТОЛЬКО cloud задача, основной loop
+// работает без малейших задержек. Экспоненциальный backoff при ошибках.
+// ============================================================================
 
 class CloudManager {
 private:
     String serverUrl;
     String apiKey;
-    unsigned long lastTelemetryMs = 0;
-    unsigned long lastCommandCheckMs = 0;
-    unsigned long lastSettingsCheckMs = 0;
-    unsigned long telemetryIntervalMs = 2000;  // Send telemetry every 2 sec
-    unsigned long commandCheckIntervalMs = 2000;  // Check commands every 2 sec
-    unsigned long settingsCheckIntervalMs = 60000;  // Check settings every 60 sec (увеличено с 30)
-    unsigned long settingsLastUpdate = 0;  // Timestamp of last settings update from cloud
-    
-    // === ЭКСПОНЕНЦИАЛЬНЫЙ BACKOFF при ошибках ===
-    int errorCount = 0;                              // Счётчик ошибок подряд
-    static const int MAX_BACKOFF_MULTIPLIER = 5;    // Макс. множитель: 2с * 5 = 10с (для telemetry/commands)
-    // =================================================
-    
-    // === РОТАЦИЯ ЗАПРОСОВ: только один запрос за вызов ===
-    // 0 = telemetry, 1 = commands, 2 = settings
-    int nextRequestType = 0;
-    // ====================================================
-    
-    // === ПЕРЕИСПОЛЬЗУЕМЫЙ HTTPS клиент (предотвращает фрагментацию кучи) ===
+    unsigned long telemetryIntervalMs = 2000;       // Отправка телеметрии каждые 2 сек
+    unsigned long commandCheckIntervalMs = 2000;     // Проверка команд каждые 2 сек
+    unsigned long settingsCheckIntervalMs = 60000;   // Проверка настроек каждые 60 сек
+    volatile unsigned long settingsLastUpdate = 0;  // Timestamp последнего обновления (volatile: запись из cloud задачи)
+
+    // === ЭКСПОНЕНЦИАЛЬНЫЙ BACKOFF при ошибках (только в cloud задаче) ===
+    int errorCount = 0;
+    static const int MAX_BACKOFF_MULTIPLIER = 5;     // Макс. множитель: 2^5 = 32
+
+    // === ПЕРЕИСПОЛЬЗУЕМЫЙ HTTPS клиент (только из cloud задачи, без mutex) ===
     WiFiClientSecure _client;
     bool _clientInitialized = false;
-    // ========================================================================
-    
-    // Callback for processing commands from cloud
+
+    // === FREERTOS: задача, мьютекс, очереди ===
+    static const int QUEUE_DATA_SIZE = 1024;         // Макс. размер элемента очереди (байт)
+    struct QueueItem {
+        char data[QUEUE_DATA_SIZE];
+    };
+
+    TaskHandle_t _taskHandle = nullptr;              // Handle cloud задачи
+    SemaphoreHandle_t _telemetryMutex = nullptr;     // Мьютекс для _telemetryBuffer
+    String _telemetryBuffer;                         // Общий буфер телеметрии (main → cloud)
+    QueueHandle_t _commandQueue = nullptr;           // Команды: cloud → main (5 элементов)
+    QueueHandle_t _settingsQueue = nullptr;          // Настройки: cloud → main (2 элемента)
+    volatile bool _running = false;                  // Флаг работы cloud задачи
+
+    // === Callbacks (вызываются ТОЛЬКО из основного loop через очереди) ===
     typedef void (*CommandCallback)(const String& command, const String& params);
     CommandCallback onCommand = nullptr;
-    
-    // Callback for processing settings from cloud
+
     typedef void (*SettingsCallback)(const String& settingsJson);
     SettingsCallback onSettings = nullptr;
-    
+
+    // ----------------------------------------------------------------
+    // Инициализация HTTPS клиента (только из cloud задачи)
+    // ----------------------------------------------------------------
     void ensureClient() {
         if (!_clientInitialized) {
             _client.setInsecure();
             _clientInitialized = true;
         }
     }
-    
-public:
-    CloudManager() : serverUrl(""), apiKey("") {}
-    
-    void begin(const String& url, const String& key) {
-        serverUrl = url;
-        apiKey = key;
-        Serial.println("[Cloud] Initialized: " + serverUrl);
+
+    // ----------------------------------------------------------------
+    // Расчёт текущего интервала с backoff
+    // ----------------------------------------------------------------
+    unsigned long getBackoffInterval(unsigned long baseInterval) {
+        int multiplier = 1;
+        for (int i = 0; i < errorCount && i < MAX_BACKOFF_MULTIPLIER; i++) {
+            multiplier *= 2;
+        }
+        return baseInterval * multiplier;
     }
-    
-    void onCommandReceived(CommandCallback callback) {
-        onCommand = callback;
-    }
-    
-    void onSettingsReceived(SettingsCallback callback) {
-        onSettings = callback;
-    }
-    
-    void setTelemetryInterval(unsigned long ms) {
-        telemetryIntervalMs = ms;
-    }
-    
-    void setCommandCheckInterval(unsigned long ms) {
-        commandCheckIntervalMs = ms;
-    }
-    
-    bool isConfigured() {
-        return serverUrl.length() > 0 && apiKey.length() > 0;
-    }
-    
-    // Send telemetry data to cloud
+
+    // =================================================================
+    // HTTP методы — вызываются ТОЛЬКО из cloud задачи (core 0)
+    // =================================================================
+
     bool sendTelemetry(const String& jsonData) {
         if (!isConfigured()) return false;
-        
+
         ensureClient();
         HTTPClient http;
-        
+
         String url = serverUrl + "?telemetry=1";
-        
         http.begin(_client, url);
-        http.setTimeout(2000);  // 2 сек таймаут (уменьшено с 5 сек)
+        http.setTimeout(2000);
         http.addHeader("Content-Type", "application/json");
         String authHeader = "Bearer " + apiKey;
         http.addHeader("Authorization", authHeader.c_str());
-        
+
         int httpCode = http.POST(jsonData);
-        
+
         if (httpCode == 200) {
-            String response = http.getString();
+            http.getString();  // drain response
             http.end();
             return true;
         } else {
@@ -102,33 +110,29 @@ public:
             return false;
         }
     }
-    
-    // Check for pending commands from cloud
+
     bool checkCommands() {
         if (!isConfigured()) return false;
-        
+
         ensureClient();
         HTTPClient http;
-        
+
         String url = serverUrl + "?commands=1";
-        
         http.begin(_client, url);
-        http.setTimeout(2000);  // 2 сек таймаут
+        http.setTimeout(2000);
         String authHeader = "Bearer " + apiKey;
         http.addHeader("Authorization", authHeader.c_str());
-        
+
         int httpCode = http.GET();
-        
+
         if (httpCode == 200) {
             String response = http.getString();
             http.end();
-            
-            // Parse response if contains commands
-            // Expected: {"commands": [{"command": "NAME", "params": {...}}, ...]}
+
+            // Если есть команды — парсим и отправляем в очередь
             if (response.indexOf("\"commands\"") != -1) {
                 parseCommands(response);
             }
-            // Возвращаем true при любом успешном запросе (даже без команд)
             return true;
         } else {
             if (httpCode == -1) {
@@ -140,31 +144,27 @@ public:
         }
         return false;
     }
-    
-    // Check for settings update from cloud
+
     bool checkSettings() {
         if (!isConfigured() || onSettings == nullptr) return false;
-        
+
         ensureClient();
         HTTPClient http;
-        
+
         String url = serverUrl + "?settings=1";
-        
         http.begin(_client, url);
-        http.setTimeout(2000);  // 2 сек таймаут
+        http.setTimeout(2000);
         String authHeader = "Bearer " + apiKey;
         http.addHeader("Authorization", authHeader.c_str());
-        
+
         int httpCode = http.GET();
-        
+
         if (httpCode == 200) {
             String response = http.getString();
             http.end();
-            
-            // Parse settings from cloud response
-            // Expected: {"settings": {...}, "settings_last_update": timestamp}
+
             if (response.indexOf("\"settings\"") != -1) {
-                // Extract settings timestamp
+                // Извлекаем timestamp настроек
                 int tsPos = response.indexOf("\"settings_last_update\":");
                 unsigned long cloudTs = 0;
                 if (tsPos != -1) {
@@ -174,17 +174,16 @@ public:
                     String tsStr = response.substring(start, end);
                     cloudTs = tsStr.toInt();
                 }
-                
-                // Only update if settings are newer
+
+                // Применяем только если настройки новее
                 if (cloudTs > settingsLastUpdate) {
                     settingsLastUpdate = cloudTs;
                     Serial.printf("[Cloud] Settings updated from cloud (ts: %lu)\n", cloudTs);
-                    
-                    // Extract settings JSON and call callback
+
+                    // Извлекаем JSON объекта настроек
                     int settingsStart = response.indexOf("{\"settings\":");
                     if (settingsStart != -1) {
                         int jsonStart = response.indexOf("{", settingsStart);
-                        // Find the settings object
                         int depth = 0;
                         int jsonEnd = jsonStart;
                         for (int i = jsonStart; i < response.length(); i++) {
@@ -198,11 +197,25 @@ public:
                             }
                         }
                         String settingsJson = response.substring(jsonStart, jsonEnd);
-                        onSettings(settingsJson);
+
+                        // Отправляем в очередь вместо прямого вызова callback
+                        // Callback будет вызван из update() в основном loop
+                        if (_settingsQueue && settingsJson.length() > 0) {
+                            if (settingsJson.length() < QUEUE_DATA_SIZE) {
+                                QueueItem item;
+                                memset(item.data, 0, QUEUE_DATA_SIZE);
+                                strncpy(item.data, settingsJson.c_str(), QUEUE_DATA_SIZE - 1);
+                                if (xQueueSend(_settingsQueue, &item, 0) != pdTRUE) {
+                                    Serial.println("[Cloud] WARNING: settings queue full!");
+                                }
+                            } else {
+                                Serial.printf("[Cloud] WARNING: settings JSON too large (%d bytes)\n",
+                                              settingsJson.length());
+                            }
+                        }
                     }
                 }
             }
-            // Возвращаем true при любом успешном запросе
             return true;
         } else {
             Serial.printf("[Cloud] Settings check failed: %d\n", httpCode);
@@ -210,96 +223,18 @@ public:
         }
         return false;
     }
-    
-    void setSettingsLastUpdate(unsigned long ts) {
-        settingsLastUpdate = ts;
-    }
-    
-    // Вспомогательный метод: расчёт текущего интервала с backoff
-    unsigned long getBackoffInterval(unsigned long baseInterval) {
-        // Экспоненциальная задержка: base * 2^errorCount, но не более MAX_BACKOFF_MULTIPLIER
-        int multiplier = 1;
-        for (int i = 0; i < errorCount && i < MAX_BACKOFF_MULTIPLIER; i++) {
-            multiplier *= 2;
-        }
-        return baseInterval * multiplier;
-    }
-    
-    // Call this periodically from main loop
-    // ВАЖНО: Только ОДИН запрос за вызов для предотвращения долгих блокировок loop()
-    // При ошибках — экспоненциальный backoff (2с → 4с → 8с → 16с → 32с)
-    // _client.stop() ТОЛЬКО при ошибках: закрывает мёртвое TCP, предотвращает 3-мин ретрансмиссии
-    // При успехе — соединение переиспользуется, без TLS-оверха
-    void update(const String& telemetryJson) {
-        if (!isConfigured()) return;
-        
-        unsigned long now = millis();
-        
-        // Если были ошибки — закрываем мёртвое TCP-соединение перед следующим запросом
-        if (errorCount > 0) {
-            _client.stop();
-        }
-        
-        // Ротация запросов: проверяем только один тип за вызов
-        switch (nextRequestType) {
-            case 0: // Telemetry
-                if (now - lastTelemetryMs >= getBackoffInterval(telemetryIntervalMs)) {
-                    if (sendTelemetry(telemetryJson)) {
-                        errorCount = 0;  // Успех — сброс backoff
-                    } else {
-                        errorCount++;  // Ошибка — увеличиваем backoff
-                        lastTelemetryMs = now;  // Обновляем даже при ошибке, чтобы не долбиться каждый loop
-                        Serial.printf("[Cloud] Backoff: errorCount=%d, next interval=%lu ms\n", errorCount, getBackoffInterval(telemetryIntervalMs));
-                    }
-                }
-                nextRequestType = 1;
-                break;
-                
-            case 1: // Commands
-                if (now - lastCommandCheckMs >= getBackoffInterval(commandCheckIntervalMs)) {
-                    if (checkCommands()) {
-                        errorCount = 0;  // Успех — сброс backoff
-                    } else {
-                        errorCount++;  // Ошибка — увеличиваем backoff
-                        lastCommandCheckMs = now;  // Обновляем даже при ошибке
-                        Serial.printf("[Cloud] Backoff: errorCount=%d, next interval=%lu ms\n", errorCount, getBackoffInterval(commandCheckIntervalMs));
-                    }
-                }
-                nextRequestType = 2;
-                break;
-                
-            case 2: // Settings
-                if (now - lastSettingsCheckMs >= getBackoffInterval(settingsCheckIntervalMs)) {
-                    if (checkSettings()) {
-                        errorCount = 0;  // Успех — сброс backoff
-                    } else {
-                        errorCount++;  // Ошибка — увеличиваем backoff
-                        lastSettingsCheckMs = now;  // Обновляем даже при ошибке
-                        Serial.printf("[Cloud] Backoff: errorCount=%d, next interval=%lu ms\n", errorCount, getBackoffInterval(settingsCheckIntervalMs));
-                    }
-                }
-                nextRequestType = 0; // Возвращаемся к telemetry
-                break;
-        }
-    }
-    
-    // Get server connection status
-    bool isConnected() {
-        return WiFi.status() == WL_CONNECTED && isConfigured();
-    }
-    
-private:
+
+    // ----------------------------------------------------------------
+    // Парсинг команд — результат в очередь (cloud → main)
+    // ----------------------------------------------------------------
     void parseCommands(const String& response) {
-        // Simple JSON parsing for commands
-        // Looking for: {"commands":[{"command":"NAME","params":{...}},...]}
-        
         int cmdsStart = response.indexOf("\"commands\"");
         if (cmdsStart == -1) return;
-        
+
         int arrStart = response.indexOf("[", cmdsStart);
         if (arrStart == -1) return;
-        
-        // Find matching ] by counting brackets depth
+
+        // Находим закрывающую ] по глубине скобок
         int depth = 1;
         int pos = arrStart + 1;
         while (pos < response.length() && depth > 0) {
@@ -309,30 +244,246 @@ private:
             pos++;
         }
         int arrEnd = pos - 1;
-        
+
         String commands = response.substring(arrStart + 1, arrEnd);
-        
-        // Extract each command - find all {"command": patterns
+
+        // Извлекаем каждую команду и отправляем в очередь
         int cmdPos = 0;
         while (cmdPos < commands.length()) {
             int cmdStart = commands.indexOf("{\"command\":", cmdPos);
             if (cmdStart == -1) break;
-            
-            // Find command name
+
             int nameStart = commands.indexOf("\"", cmdStart + 11) + 1;
             int nameEnd = commands.indexOf("\"", nameStart);
             if (nameEnd == -1 || nameEnd <= nameStart) break;
-            
+
             String cmdName = commands.substring(nameStart, nameEnd);
-            
-            // Call callback for each command
-            if (onCommand) {
-                onCommand(cmdName, "{}");
-                Serial.printf("[Cloud] Command parsed: %s\n", cmdName.c_str());
+
+            // В очередь вместо прямого вызова callback
+            if (_commandQueue && cmdName.length() < QUEUE_DATA_SIZE) {
+                QueueItem item;
+                memset(item.data, 0, QUEUE_DATA_SIZE);
+                strncpy(item.data, cmdName.c_str(), QUEUE_DATA_SIZE - 1);
+                if (xQueueSend(_commandQueue, &item, 0) != pdTRUE) {
+                    Serial.println("[Cloud] WARNING: command queue full!");
+                }
+                Serial.printf("[Cloud] Command queued: %s\n", cmdName.c_str());
             }
-            
+
             cmdPos = nameEnd + 1;
         }
+    }
+
+    // =================================================================
+    // Cloud задача — FreeRTOS, core 0, приоритет 0 (низкий)
+    // =================================================================
+    // Все HTTP-запросы, backoff, _client — только здесь.
+    // Основной loop (core 1) НИКОГДА не вызывает HTTP.
+    // =================================================================
+
+    void _cloudTaskLoop() {
+        unsigned long lastTelemetryMs = millis();
+        unsigned long lastCommandCheckMs = millis();
+        unsigned long lastSettingsCheckMs = millis();
+
+        Serial.println("[Cloud] Task started on core " + String(xPortGetCoreID()));
+
+        while (_running) {
+            unsigned long now = millis();
+
+            // Проверяем какие запросы пора сделать
+            bool doTelemetry = (now - lastTelemetryMs >= getBackoffInterval(telemetryIntervalMs));
+            bool doCommands = (now - lastCommandCheckMs >= getBackoffInterval(commandCheckIntervalMs));
+            bool doSettings = (now - lastSettingsCheckMs >= getBackoffInterval(settingsCheckIntervalMs));
+
+            if (doTelemetry || doCommands || doSettings) {
+                // Читаем телеметрию из общего буфера (через mutex)
+                String telemetry;
+                if (xSemaphoreTake(_telemetryMutex, pdMS_TO_TICKS(100))) {
+                    telemetry = _telemetryBuffer;
+                    xSemaphoreGive(_telemetryMutex);
+                }
+
+                // Делаем только ОДИН запрос за цикл
+                bool success = false;
+                unsigned long baseInterval = telemetryIntervalMs;
+
+                if (doTelemetry) {
+                    success = sendTelemetry(telemetry);
+                    lastTelemetryMs = millis();
+                    baseInterval = telemetryIntervalMs;
+                } else if (doCommands) {
+                    success = checkCommands();
+                    lastCommandCheckMs = millis();
+                    baseInterval = commandCheckIntervalMs;
+                } else if (doSettings) {
+                    success = checkSettings();
+                    lastSettingsCheckMs = millis();
+                    baseInterval = settingsCheckIntervalMs;
+                }
+
+                if (success) {
+                    if (errorCount > 0) {
+                        Serial.println("[Cloud] Connection restored");
+                    }
+                    errorCount = 0;
+                } else {
+                    errorCount++;
+                    Serial.printf("[Cloud] Backoff: errorCount=%d, next interval=%lu ms\n",
+                                  errorCount, getBackoffInterval(baseInterval));
+                }
+
+                // Закрываем мёртвое TCP при ошибках
+                if (errorCount > 0) {
+                    _client.stop();
+                }
+            } else {
+                // Нечего делать — спим до ближайшего запроса
+                // (vTaskDelay НЕ блокирует другие задачи!)
+                unsigned long nt = getBackoffInterval(telemetryIntervalMs) - (millis() - lastTelemetryMs);
+                unsigned long nc = getBackoffInterval(commandCheckIntervalMs) - (millis() - lastCommandCheckMs);
+                unsigned long ns = getBackoffInterval(settingsCheckIntervalMs) - (millis() - lastSettingsCheckMs);
+                unsigned long sleepMs = nt;
+                if (nc < sleepMs) sleepMs = nc;
+                if (ns < sleepMs) sleepMs = ns;
+                // Минимум 10мс, максимум 1 сек (чтобы быстро реагировать при смене errorCount)
+                if (sleepMs < 10) sleepMs = 10;
+                if (sleepMs > 1000) sleepMs = 1000;
+                vTaskDelay(pdMS_TO_TICKS(sleepMs));
+            }
+        }
+
+        Serial.println("[Cloud] Task stopped");
+        _taskHandle = nullptr;
+        vTaskDelete(nullptr);
+    }
+
+    // Статическая точка входа для xTaskCreatePinnedToCore
+    static void _cloudTaskEntry(void* param) {
+        static_cast<CloudManager*>(param)->_cloudTaskLoop();
+    }
+
+public:
+    CloudManager() : serverUrl(""), apiKey("") {}
+
+    ~CloudManager() {
+        stop();
+    }
+
+    // ----------------------------------------------------------------
+    // Инициализация — вызывается из setup()
+    // Создаёт мьютекс и очереди, cloud задача стартует автоматически
+    // при первом вызове update()
+    // ----------------------------------------------------------------
+    void begin(const String& url, const String& key) {
+        serverUrl = url;
+        apiKey = key;
+
+        // Создаём примитивы FreeRTOS (одноразово)
+        if (!_telemetryMutex) {
+            _telemetryMutex = xSemaphoreCreateMutex();
+        }
+        if (!_commandQueue) {
+            _commandQueue = xQueueCreate(5, sizeof(QueueItem));    // До 5 команд в очереди
+        }
+        if (!_settingsQueue) {
+            _settingsQueue = xQueueCreate(2, sizeof(QueueItem));  // До 2 пакетов настроек
+        }
+
+        Serial.println("[Cloud] Initialized: " + serverUrl);
+    }
+
+    // Запуск cloud задачи (core 0, приоритет 0, стек 8KB)
+    void startTask() {
+        if (_taskHandle != nullptr) return;  // Уже запущена
+
+        _running = true;
+        xTaskCreatePinnedToCore(
+            _cloudTaskEntry,   // Функция задачи
+            "cloud_task",      // Имя (для отладки)
+            8192,              // Стек (8KB — достаточно для HTTP + JSON парсинга)
+            this,              // Параметр: указатель на CloudManager
+            0,                 // Приоритет (низкий, ниже WiFi задач)
+            &_taskHandle,      // Handle задачи
+            0                  // Core 0 (там WiFi/TCP стек)
+        );
+    }
+
+    // Остановка cloud задачи
+    void stop() {
+        _running = false;
+        // НЕ вызываем xSemaphoreGive — мьютекс может принадлежать cloud задаче.
+        // Cloud задача увидит _running==false и выйдет сама, освободив мьютекс.
+    }
+
+    void onCommandReceived(CommandCallback callback) {
+        onCommand = callback;
+    }
+
+    void onSettingsReceived(SettingsCallback callback) {
+        onSettings = callback;
+    }
+
+    void setTelemetryInterval(unsigned long ms) {
+        telemetryIntervalMs = ms;
+    }
+
+    void setCommandCheckInterval(unsigned long ms) {
+        commandCheckIntervalMs = ms;
+    }
+
+    bool isConfigured() {
+        return serverUrl.length() > 0 && apiKey.length() > 0;
+    }
+
+    void setSettingsLastUpdate(unsigned long ts) {
+        settingsLastUpdate = ts;
+    }
+
+    // =================================================================
+    // update() — вызывается из основного loop (core 1)
+    // =================================================================
+    // НЕ делает HTTP-запросов! Занимает микросекунды:
+    //   1. Копирует телеметрию в буфер через mutex (~2 мкс)
+    //   2. Читает очередь команд — вызывает onCommand callback
+    //   3. Читает очередь настроек — вызывает onSettings callback
+    //
+    // Callback-и вызываются из контекста основного loop — безопасно.
+    // =================================================================
+    void update(const String& telemetryJson) {
+        if (!isConfigured() || !_telemetryMutex) return;
+
+        // Автозапуск cloud задачи при первом вызове
+        if (_taskHandle == nullptr && !_running) {
+            startTask();
+        }
+
+        // 1. Копируем телеметрию в общий буфер (быстро, через mutex)
+        if (xSemaphoreTake(_telemetryMutex, pdMS_TO_TICKS(10))) {
+            _telemetryBuffer = telemetryJson;
+            xSemaphoreGive(_telemetryMutex);
+        }
+
+        // 2. Проверяем очередь команд (неблокирующе, 0 мкс если пусто)
+        if (_commandQueue && onCommand) {
+            QueueItem item;
+            while (xQueueReceive(_commandQueue, &item, 0) == pdTRUE) {
+                onCommand(String(item.data), "{}");
+            }
+        }
+
+        // 3. Проверяем очередь настроек (неблокирующе, 0 мкс если пусто)
+        if (_settingsQueue && onSettings) {
+            QueueItem item;
+            while (xQueueReceive(_settingsQueue, &item, 0) == pdTRUE) {
+                onSettings(String(item.data));
+            }
+        }
+    }
+
+    // Статус подключения
+    bool isConnected() {
+        return WiFi.status() == WL_CONNECTED && isConfigured();
     }
 };
 
