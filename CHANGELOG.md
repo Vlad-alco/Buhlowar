@@ -35,6 +35,15 @@
 - `api.php` GET settings не возвращал `settings_last_update` → ESP32 не могла определить новизну настроек → механизм cloud→device settings был мёртв.
 - Исправлено: добавлено `settings_last_update` в ответ GET settings.
 
+### Анализ: LOOP Slow 56-126 мс — не является проблемой
+Исследование, без изменений кода
+
+- `[LOOP] Slow: 56-126 ms` появляется ~2.5 раза/сек — это нормально для контроллера.
+- Причина: `buildTelemetryJson()` вызывается каждый loop (~150 раз/сек), делает 60+ конкатенаций String + `logger.readNewLog()` открывает SD-файл. На слабых итерациях совпадает с обновлением DS18B20/BME280.
+- 56-126 мс не влияет на работу: процессы идут с секундными интервалами, LCD раз в 500 мс.
+- NetMgr, CloudManager и MEM check — выполняются в отдельных FreeRTOS задачах на core 0, не блокируют loop на core 1.
+- Если потребуется ускорить — вызывать `buildTelemetryJson()` раз в 2 сек вместо каждого loop.
+
 ### ProcessEngine.cpp — Диагностика: лог cycleLim и bodyValveNC при старте TELO
 `07d5cec`
 
