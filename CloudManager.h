@@ -16,6 +16,11 @@ private:
     unsigned long settingsCheckIntervalMs = 60000;  // Check settings every 60 sec (увеличено с 30)
     unsigned long settingsLastUpdate = 0;  // Timestamp of last settings update from cloud
     
+    // === ЭКСПОНЕНЦИАЛЬНЫЙ BACKOFF при ошибках ===
+    int errorCount = 0;                              // Счётчик ошибок подряд
+    static const int MAX_BACKOFF_MULTIPLIER = 5;    // Макс. множитель: 2с * 5 = 10с (для telemetry/commands)
+    // =================================================
+    
     // === РОТАЦИЯ ЗАПРОСОВ: только один запрос за вызов ===
     // 0 = telemetry, 1 = commands, 2 = settings
     int nextRequestType = 0;
@@ -75,6 +80,7 @@ public:
         if (!isConfigured()) return false;
         
         ensureClient();
+        _client.stop();  // Закрываем предыдущее TCP-соединение (предотвращает 3-мин зависание)
         HTTPClient http;
         
         String url = serverUrl + "?telemetry=1";
@@ -89,7 +95,6 @@ public:
         
         if (httpCode == 200) {
             String response = http.getString();
-            lastTelemetryMs = millis();
             http.end();
             return true;
         } else {
@@ -104,6 +109,7 @@ public:
         if (!isConfigured()) return false;
         
         ensureClient();
+        _client.stop();  // Закрываем предыдущее TCP-соединение (предотвращает 3-мин зависание)
         HTTPClient http;
         
         String url = serverUrl + "?commands=1";
@@ -142,6 +148,7 @@ public:
         if (!isConfigured() || onSettings == nullptr) return false;
         
         ensureClient();
+        _client.stop();  // Закрываем предыдущее TCP-соединение (предотвращает 3-мин зависание)
         HTTPClient http;
         
         String url = serverUrl + "?settings=1";
@@ -211,9 +218,20 @@ public:
         settingsLastUpdate = ts;
     }
     
+    // Вспомогательный метод: расчёт текущего интервала с backoff
+    unsigned long getBackoffInterval(unsigned long baseInterval) {
+        // Экспоненциальная задержка: base * 2^errorCount, но не более MAX_BACKOFF_MULTIPLIER
+        int multiplier = 1;
+        for (int i = 0; i < errorCount && i < MAX_BACKOFF_MULTIPLIER; i++) {
+            multiplier *= 2;
+        }
+        return baseInterval * multiplier;
+    }
+    
     // Call this periodically from main loop
     // ВАЖНО: Только ОДИН запрос за вызов для предотвращения долгих блокировок loop()
-    // Максимальная блокировка: 2 сек (вместо 6 сек при трёх запросах одновременно)
+    // При ошибках — экспоненциальный backoff (2с → 4с → 8с → 16с → 32с)
+    // _client.stop() перед каждым запросом предотвращает 3-мин TCP-ретрансмиссии
     void update(const String& telemetryJson) {
         if (!isConfigured()) return;
         
@@ -222,26 +240,39 @@ public:
         // Ротация запросов: проверяем только один тип за вызов
         switch (nextRequestType) {
             case 0: // Telemetry
-                if (now - lastTelemetryMs >= telemetryIntervalMs) {
-                    sendTelemetry(telemetryJson);
-                    // lastTelemetryMs обновляется внутри sendTelemetry при успехе
+                if (now - lastTelemetryMs >= getBackoffInterval(telemetryIntervalMs)) {
+                    if (sendTelemetry(telemetryJson)) {
+                        errorCount = 0;  // Успех — сброс backoff
+                    } else {
+                        errorCount++;  // Ошибка — увеличиваем backoff
+                        lastTelemetryMs = now;  // Обновляем даже при ошибке, чтобы не долбиться каждый loop
+                        Serial.printf("[Cloud] Backoff: errorCount=%d, next interval=%lu ms\n", errorCount, getBackoffInterval(telemetryIntervalMs));
+                    }
                 }
                 nextRequestType = 1;
                 break;
                 
             case 1: // Commands
-                if (now - lastCommandCheckMs >= commandCheckIntervalMs) {
+                if (now - lastCommandCheckMs >= getBackoffInterval(commandCheckIntervalMs)) {
                     if (checkCommands()) {
-                        lastCommandCheckMs = now;
+                        errorCount = 0;  // Успех — сброс backoff
+                    } else {
+                        errorCount++;  // Ошибка — увеличиваем backoff
+                        lastCommandCheckMs = now;  // Обновляем даже при ошибке
+                        Serial.printf("[Cloud] Backoff: errorCount=%d, next interval=%lu ms\n", errorCount, getBackoffInterval(commandCheckIntervalMs));
                     }
                 }
                 nextRequestType = 2;
                 break;
                 
             case 2: // Settings
-                if (now - lastSettingsCheckMs >= settingsCheckIntervalMs) {
+                if (now - lastSettingsCheckMs >= getBackoffInterval(settingsCheckIntervalMs)) {
                     if (checkSettings()) {
-                        lastSettingsCheckMs = now;
+                        errorCount = 0;  // Успех — сброс backoff
+                    } else {
+                        errorCount++;  // Ошибка — увеличиваем backoff
+                        lastSettingsCheckMs = now;  // Обновляем даже при ошибке
+                        Serial.printf("[Cloud] Backoff: errorCount=%d, next interval=%lu ms\n", errorCount, getBackoffInterval(settingsCheckIntervalMs));
                     }
                 }
                 nextRequestType = 0; // Возвращаемся к telemetry
