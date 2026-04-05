@@ -1177,7 +1177,7 @@
 
             const methodEl = document.getElementById('mon-method');
             if (methodEl) {
-                 if (currentData.process == 2 && (currentData.stage == 'TELO' || currentData.stage == 'GOLOVY')) {
+                 if (currentData.process == 2 && (currentData.stage == 'TELO' || currentData.stage == 'GOLOVY' || currentData.stage == 'NASEBYA')) {
                      methodEl.textContent = currentData.bodyMethodName || '';
                      methodEl.classList.remove('hidden');
                  } else { methodEl.classList.add('hidden'); }
@@ -1314,7 +1314,7 @@
             const bodyTotalEl = document.getElementById('mon-body-total');
             const bodyDoneEl = document.getElementById('mon-body-done');
 
-            if (stage == 'TELO') {
+            if (stage == 'TELO' || stage == 'NASEBYA') {
                 // Расчётная скорость (базовая * коррекция)
                 const power = cfg.power || 3000;
                 const speedBodyCorr = (cfg.speedBodyCorr >= 0 && cfg.speedBodyCorr <= 200) ? cfg.speedBodyCorr : 100;
@@ -1325,9 +1325,9 @@
                 let cycleVal = currentData.bodyCycle || 0;
                 let cycleLim = cfg.cycleLim || 1;
                 if (currentData.bodyMethodName == "Шпора" || cycleVal == 0) {
-                    bodyCycleEl.textContent = "--";
+                    bodyCycleEl.textContent = stage == 'NASEBYA' ? "⏳ на себе" : "--";
                 } else {
-                    bodyCycleEl.textContent = cycleVal + "/" + cycleLim;
+                    bodyCycleEl.textContent = cycleVal + "/" + cycleLim + (stage == 'NASEBYA' ? " ⏳" : "");
                 }
                 bodyRemainEl.textContent = formatTime(currentData.rectTimeRemaining || 0);
                 
@@ -1630,11 +1630,18 @@
                 document.getElementById('rect-remain').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
                 document.getElementById('rect-vol').textContent = currentData.rectVolumeTarget || '--';
             } 
-            else if (stage === 'TELO') {
+            else if (stage === 'TELO' || stage === 'NASEBYA') {
                 document.getElementById('rect-telo-info').classList.remove('hidden');
                 document.getElementById('body-method').textContent = currentData.bodyMethodName || '--';
                 document.getElementById('body-speed').textContent = (currentData.bodySpeed || 0).toFixed(1);
-                document.getElementById('body-cycle').textContent = currentData.bodyCycle || '0';
+                // При NASEBYA показываем цикл с пометкой "на себе"
+                if (stage === 'NASEBYA' && currentData.bodyCycle > 0) {
+                    document.getElementById('body-cycle').textContent = currentData.bodyCycle + '/' + (cfg.cycleLim || 1) + ' ⏳';
+                } else if (currentData.bodyMethodName === "Шпора" || !currentData.bodyCycle) {
+                    document.getElementById('body-cycle').textContent = stage === 'NASEBYA' ? '⏳' : '--';
+                } else {
+                    document.getElementById('body-cycle').textContent = currentData.bodyCycle;
+                }
             }
         }
 

@@ -928,6 +928,10 @@ void ProcessEngine::handleNasebya() {
             if (data.tsar.value < threshold) {
                 Serial.println("[Process] TSAR normalized. Resuming TELO.");
                 logger.log("TSAR normalized. Resuming TELO.");
+                // Сброс таймера расчёта объёма: без этого первый dt_h
+                // после NASEBYA охватит всё время "на себя" (клапан был закрыт),
+                // и фантомный объём (скорость × время_NASEBYA) прибавится к bodyVolDone
+                lastVolCalcTime = millis();
                 changeStage(Stage::TELO);
             } else {
                 Serial.println("[Process] TSAR still high! Finishing process.");
@@ -1908,6 +1912,10 @@ void ProcessEngine::updateRectWebInfo() {
         } else {
             currentStatus.rectTimeRemaining = 0;
         }
+    } else if (currentStage == Stage::NASEBYA) {
+        // При "на себя" сохраняем последние данные тела (метод, скорость, цикл)
+        // для отображения в WEB мониторинге. bodyVolDone тоже сохраняется (не обнуляется).
+        // Это позволяет WEB показывать мониторинг тела даже во время стабилизации.
     } else {
         currentStatus.bodyMethodName = "";
         currentStatus.bodySpeed = 0;
