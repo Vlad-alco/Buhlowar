@@ -285,6 +285,11 @@ void setup() {
   delay(1500);
   
   mainMenu->display();
+
+  // 8. РАЗРЕШАЕМ ОБРАБОТКУ HTTP ЗАПРОСОВ
+  // После этого NetworkTask может безопасно обрабатывать API handlers
+  // (processEngine.begin() уже вызван, sensorAdapter != nullptr)
+  appNetwork.setSystemReady(true);
 }
 
 // ================= ОСНОВНОЙ ЦИКЛ =================

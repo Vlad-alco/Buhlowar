@@ -155,7 +155,7 @@ void AppNetwork::begin(int checkIntervalMinutes) {
     int tries = 0;
     while (WiFi.status() != WL_CONNECTED && tries < 20) {  // 2 сек максимум
         delay(100);
-        if (server) server->handleClient();  // Обслуживаем Web
+        if (server && systemReady) server->handleClient();  // Не обрабатываем до полной инициализации
         yield();
         tries++;
     }
@@ -219,13 +219,13 @@ bool AppNetwork::connectToWiFi() {
         while (WiFi.status() != WL_CONNECTED && tries < 15) {
             delay(100);
             // handleClient каждые 5 итераций — WebServer не подвисает
-            if (tries % 5 == 0 && server) server->handleClient();
+            if (tries % 5 == 0 && server && systemReady) server->handleClient();
             yield();
             tries++;
         }
         
         if (WiFi.status() == WL_CONNECTED) return true;
-        if (server) server->handleClient();
+        if (server && systemReady) server->handleClient();
         yield();
     }
     
@@ -238,13 +238,13 @@ bool AppNetwork::connectToWiFi() {
             int tries = 0;
             while (WiFi.status() != WL_CONNECTED && tries < 15) {
                 delay(100);
-                if (tries % 5 == 0 && server) server->handleClient();
+                if (tries % 5 == 0 && server && systemReady) server->handleClient();
                 yield();
                 tries++;
             }
             
             if (WiFi.status() == WL_CONNECTED) return true;
-            if (server) server->handleClient();
+            if (server && systemReady) server->handleClient();
             yield();
         }
     }
@@ -315,10 +315,25 @@ void AppNetwork::setEngine(ProcessEngine* engine, ConfigManager* cfgMgr) {
     this->configManager = cfgMgr;
 }
 
+void AppNetwork::setSystemReady(bool ready) {
+    systemReady = ready;
+    if (ready) {
+        Serial.println("[NetMgr] System ready — API handlers enabled");
+    }
+}
+
 
 void AppNetwork::update() {
     if (!server) return; 
     unsigned long now = millis();
+    
+    // === ЗАЩИТА: не обрабатываем HTTP до полной инициализации системы ===
+    // Без этого processEngine->getSensorData() крашит (sensorAdapter = nullptr)
+    // Время window: между startTask() и processEngine.begin() (~1-2 сек при загрузке)
+    // =========================================================================
+    if (!systemReady) {
+        return;  // Браузер подождёт, запрос обработается после systemReady
+    }
     
     // === ДИАГНОСТИКА ПАМЯТИ (каждые 5 минут) ===
     static unsigned long lastMemCheck = 0;
@@ -878,7 +893,7 @@ bool AppNetwork::checkInternet() {
             Serial.println("[NetMgr] Internet check: OK");
             return true;
         }
-        if (server) server->handleClient();  // не блокируем WebServer
+        if (server && systemReady) server->handleClient();  // не блокируем WebServer
         yield();
     }
 

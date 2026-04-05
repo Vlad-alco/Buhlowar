@@ -42,6 +42,7 @@ public:
     
     // Метод для связи с логикой
     void setEngine(ProcessEngine* engine, ConfigManager* cfgMgr);
+    void setSystemReady(bool ready);  // Разрешить API handlers (после полной инициализации)
     
     void sendMessage(const String& text);
     bool isOnline(); 
@@ -65,6 +66,7 @@ private:
     bool sdInitialized = false;    // Флаг инициализации SD
     bool webServerStarted = false; // Флаг: WebServer уже запущен
     bool networkInitialized = false; // Флаг: сеть инициализирована
+    bool systemReady = false;         // Флаг: система полностью инициализирована (processEngine.begin() вызван)
     NetworkMode networkMode = NetworkMode::OFFLINE;  // Текущий режим сети
     unsigned long lastLogSize = 0;  // Позиция лога для отправки в облако
     TaskHandle_t networkTaskHandle = nullptr;

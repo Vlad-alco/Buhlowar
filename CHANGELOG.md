@@ -44,6 +44,14 @@
 - NetMgr, CloudManager и MEM check — выполняются в отдельных FreeRTOS задачах на core 0, не блокируют loop на core 1.
 - Если потребуется ускорить — вызывать `buildTelemetryJson()` раз в 2 сек вместо каждого loop.
 
+### AppNetwork.h/cpp + BuhloWar.ino — Fix Kernel Panic при загрузке от раннего HTTP запроса
+`5041d94`
+
+- **Причина**: NetworkTask запускается на core 0 до `processEngine.begin()` (строка 188 vs 271 в setup). Если браузер успевал сделать запрос в это окно (~1-2 сек), `processEngine->getSensorData()` обращался к `sensorAdapter = nullptr` → Core 0 panic (LoadProhibited).
+- **Решение**: добавлен флаг `systemReady` в AppNetwork. Все вызовы `server->handleClient()` защищены проверкой `systemReady`. API handlers недоступны до полной инициализации системы.
+- `appNetwork.setSystemReady(true)` вызывается в setup() после **всей** инициализации (строка 292) — после `processEngine.begin()`, создания всех меню и LCD.
+- Защищены все точки вызова `handleClient()`: `update()`, `beginNetwork()`, `connectToWiFi()` (обе сети), `checkInternet()`.
+
 ### ProcessEngine.cpp — Диагностика: лог cycleLim и bodyValveNC при старте TELO
 `07d5cec`
 
