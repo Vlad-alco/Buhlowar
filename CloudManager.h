@@ -80,7 +80,6 @@ public:
         if (!isConfigured()) return false;
         
         ensureClient();
-        _client.stop();  // Закрываем предыдущее TCP-соединение (предотвращает 3-мин зависание)
         HTTPClient http;
         
         String url = serverUrl + "?telemetry=1";
@@ -109,7 +108,6 @@ public:
         if (!isConfigured()) return false;
         
         ensureClient();
-        _client.stop();  // Закрываем предыдущее TCP-соединение (предотвращает 3-мин зависание)
         HTTPClient http;
         
         String url = serverUrl + "?commands=1";
@@ -148,7 +146,6 @@ public:
         if (!isConfigured() || onSettings == nullptr) return false;
         
         ensureClient();
-        _client.stop();  // Закрываем предыдущее TCP-соединение (предотвращает 3-мин зависание)
         HTTPClient http;
         
         String url = serverUrl + "?settings=1";
@@ -231,11 +228,17 @@ public:
     // Call this periodically from main loop
     // ВАЖНО: Только ОДИН запрос за вызов для предотвращения долгих блокировок loop()
     // При ошибках — экспоненциальный backoff (2с → 4с → 8с → 16с → 32с)
-    // _client.stop() перед каждым запросом предотвращает 3-мин TCP-ретрансмиссии
+    // _client.stop() ТОЛЬКО при ошибках: закрывает мёртвое TCP, предотвращает 3-мин ретрансмиссии
+    // При успехе — соединение переиспользуется, без TLS-оверха
     void update(const String& telemetryJson) {
         if (!isConfigured()) return;
         
         unsigned long now = millis();
+        
+        // Если были ошибки — закрываем мёртвое TCP-соединение перед следующим запросом
+        if (errorCount > 0) {
+            _client.stop();
+        }
         
         // Ротация запросов: проверяем только один тип за вызов
         switch (nextRequestType) {
