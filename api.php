@@ -296,6 +296,7 @@ function checkAndSendAlerts($data) {
 if (isset($_GET['settings']) && $method === 'GET') {
     $settings = readJson($config['db_file']);
     echo json_encode([
+        'settings_last_update' => $settings['settings_last_update'] ?? 0,
         'settings' => $settings['settings'] ?? []
     ]);
     exit;

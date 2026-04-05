@@ -27,6 +27,14 @@
 - **Решение**: `_client.stop()` перед `http.begin()` (закрывает мёртвое TCP), экспоненциальный backoff при ошибках (интервалы: 2→4→8→16→32 сек, макс. множитель x5), обновление lastCheckMs даже при ошибке.
 - Добавлено логирование backoff: `[Cloud] Backoff: errorCount=N, next interval=X ms`.
 
+### CloudManager.h + api.php — Fix ложного errorCount от settings check
+`dabe4f6`
+
+- `checkSettings()` возвращал `false` при `onSettings == nullptr` (callback никогда не подключался в проекте). Cloud задача считала это сетевой ошибкой → `errorCount = 1` каждую минуту.
+- Исправлено: при `onSettings == nullptr` возвращается `true` (не ошибка, фича не используется). Ложный backoff убран.
+- `api.php` GET settings не возвращал `settings_last_update` → ESP32 не могла определить новизну настроек → механизм cloud→device settings был мёртв.
+- Исправлено: добавлено `settings_last_update` в ответ GET settings.
+
 ### ProcessEngine.cpp — Диагностика: лог cycleLim и bodyValveNC при старте TELO
 `07d5cec`
 

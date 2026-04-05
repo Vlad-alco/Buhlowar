@@ -146,7 +146,7 @@ private:
     }
 
     bool checkSettings() {
-        if (!isConfigured() || onSettings == nullptr) return false;
+        if (!isConfigured() || onSettings == nullptr) return true;  // не ошибка — фича не используется
 
         ensureClient();
         HTTPClient http;
