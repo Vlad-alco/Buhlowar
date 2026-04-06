@@ -1654,19 +1654,23 @@
                 }
             }
 
-            // === MARKERS: TSA, БАК СТОП, РАЗГОН ДО (skip during animation) ===
+            // === MARKERS: TSA on outer ring, СТОП and ТARA on tank ring (skip during animation) ===
             if(!animTemps){
-                const rcr=GS.or;const ri=rcr-GS.lw/2;const ro=rcr+GS.lw/2;
+                // Ring indices: 0=aqua(inner), 1=tank, 2=tsar, 3=tsa(outer)
+                const ringIdx={tsa:3,tank:1,tsar:2,aqua:0};
                 const markers=[
-                    {val:tsaLimit,   label:'TSA',  color:'#ff3355', show:tsaLimit>0&&tsaLimit<GS.maxT},
-                    {val:cfg.bakStopTemp, label:'СТОП',color:'#a855f7', show:cfg.bakStopTemp>0&&cfg.bakStopTemp<GS.maxT},
-                    {val:cfg.razgonTemp,  label:'РАЗГ',color:'#ff8c00', show:cfg.razgonTemp>0&&cfg.razgonTemp<GS.maxT}
+                    {val:tsaLimit,      label:'TSA', color:'#ff3355', ringKey:'tsa',  show:tsaLimit>0&&tsaLimit<GS.maxT},
+                    {val:cfg.bakStopTemp,label:'СТОП',color:'#f97316',ringKey:'tank', show:cfg.bakStopTemp>0&&cfg.bakStopTemp<GS.maxT},
+                    {val:cfg.midterm,   label:'TARA',color:'#facc15',ringKey:'tank', show:cfg.midterm>0&&cfg.midterm<GS.maxT}
                 ];
                 markers.forEach(mk=>{
                     if(!mk.show)return;
+                    const ri_idx=ringIdx[mk.ringKey];
+                    const rcr=GS.or-(GS.lw+GS.rg)*(GS.rings.length-1-ri_idx);
+                    const ri=rcr-GS.lw/2;const ro=rcr+GS.lw/2;
                     const ma=GS.startA+(mk.val/range)*aRange;
                     ctx.save();ctx.translate(cx,cy);
-                    // Line across all rings
+                    // Line across this ring only
                     ctx.beginPath();ctx.moveTo(Math.cos(ma)*ri,Math.sin(ma)*ri);ctx.lineTo(Math.cos(ma)*ro,Math.sin(ma)*ro);
                     ctx.strokeStyle=mk.color;ctx.lineWidth=2;ctx.stroke();
                     // Label in upper-right corner at top of tick
