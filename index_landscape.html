@@ -32,7 +32,7 @@
             --neon-dim-amber: rgba(255, 140, 0, 0.15);
             --neon-dim-purple: rgba(168, 85, 247, 0.15);
             --panel-bg: rgba(10, 18, 32, 0.85);
-            --panel-border: rgba(0, 240, 255, 0.12);
+            --panel-border: rgba(0, 240, 255, 0.22);
             --grid-line: rgba(0, 240, 255, 0.04);
         }
 
@@ -177,9 +177,9 @@
             font-weight: 700;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: #4a5568;
+            color: var(--neon-blue);
             padding: 8px 12px 4px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
         }
 
         /* === TEMPERATURES PANEL (left) === */
@@ -195,7 +195,7 @@
         .temp-item:hover { background: rgba(255,255,255,0.02); }
         .temp-label {
             font-size: 10px;
-            color: #4a5568;
+            color: #8a95a8;
             letter-spacing: 0.1em;
             font-weight: 600;
         }
@@ -211,7 +211,7 @@
         .temp-aqua { color: var(--neon-blue); text-shadow: 0 0 8px rgba(0,240,255,0.3); }
         .temp-limit {
             font-size: 9px;
-            color: #3a4558;
+            color: #5a6577;
             margin-top: 1px;
         }
         .temp-alarm {
@@ -385,7 +385,7 @@
         }
         .sys-label {
             font-size: 8px;
-            color: #3a4a60;
+            color: #6a7588;
             letter-spacing: 0.12em;
             text-transform: uppercase;
         }
@@ -415,9 +415,10 @@
             font-weight: 700;
             letter-spacing: 0.18em;
             text-transform: uppercase;
+            color: var(--neon-blue);
             margin-bottom: 8px;
             padding-bottom: 4px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
         }
         .calc-title.heads { color: var(--neon-amber); }
         .calc-title.body { color: var(--neon-green); }
@@ -430,7 +431,7 @@
             font-size: 11px;
             padding: 2px 0;
         }
-        .calc-row-data .label { color: #4a5568; font-size: 10px; }
+        .calc-row-data .label { color: #8a95a8; font-size: 10px; }
         .calc-row-data .value { font-weight: 700; font-variant-numeric: tabular-nums; }
         .calc-row-data .value.amber { color: var(--neon-amber); }
         .calc-row-data .value.green { color: var(--neon-green); }
@@ -556,7 +557,7 @@
         }
         .s-row label {
             font-size: 10px;
-            color: #7a8598;
+            color: #a0a8b8;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             font-weight: 600;
@@ -663,15 +664,9 @@
                 <div id="network-mode-badge" class="net-badge w">W</div>
             </div>
             <div class="hud-status-group">
-                <div class="hud-indicator" id="ind-heater"><div class="ind-dot" id="dot-heater"></div><span>НГР</span></div>
-                <div class="hud-indicator" id="ind-mixer"><div class="ind-dot" id="dot-mixer"></div><span>МШЛ</span></div>
-                <div class="hud-indicator" id="ind-water"><div class="ind-dot" id="dot-water"></div><span>ВДА</span></div>
-                <div style="width:1px;height:20px;background:rgba(255,255,255,0.06);margin:0 4px;"></div>
-                <div class="hud-indicator"><span style="color:var(--neon-blue);" id="pressure-value">760</span><span>mm</span></div>
-                <div class="hud-indicator"><span style="color:var(--neon-green);" id="power-display">3000</span><span>W</span></div>
-                <div style="width:1px;height:20px;background:rgba(255,255,255,0.06);margin:0 4px;"></div>
-                <button class="hud-header-btn" onclick="testAlarm()" title="Тест звука"><i data-lucide="volume-2" style="width:14px;height:14px;"></i></button>
-                <button class="hud-header-btn" onclick="showPage('settings')" title="Настройки"><i data-lucide="settings" style="width:14px;height:14px;"></i></button>
+                <div class="hud-indicator" id="ind-heater"><div class="ind-dot" id="dot-heater"></div><span>НАГРЕВ</span></div>
+                <div class="hud-indicator" id="ind-mixer"><div class="ind-dot" id="dot-mixer"></div><span>МЕШАЛКА</span></div>
+                <div class="hud-indicator" id="ind-water"><div class="ind-dot" id="dot-water"></div><span>ВОДА</span></div>
             </div>
         </header>
 
@@ -683,7 +678,7 @@
 
                 <!-- LEFT: TEMPERATURES -->
                 <div class="hud-panel temps-panel">
-                    <div class="hud-panel-title">Температуры</div>
+                    <div class="hud-panel-title" style="color:var(--neon-amber);">Температуры</div>
                     <div class="temp-item">
                         <div>
                             <div class="temp-label">TSA</div>
@@ -748,7 +743,7 @@
                 <div class="monitor-right-col">
                 <!-- RIGHT TOP: BAROMETER -->
                 <div class="hud-panel baro-panel">
-                    <div class="hud-panel-title">Атмосфера</div>
+                    <div class="hud-panel-title" style="color:var(--neon-blue);">Атмосфера</div>
                     <div class="baro-body">
                         <div style="text-align:center;">
                             <div class="baro-range">790</div>
@@ -773,7 +768,7 @@
 
                 <!-- RIGHT BOTTOM: SYSTEM -->
                 <div class="hud-panel sys-panel">
-                    <div class="hud-panel-title">Система</div>
+                    <div class="hud-panel-title" style="color:var(--neon-green);">Система</div>
                     <div class="sys-grid">
                         <div class="sys-item">
                             <span class="sys-label">КРЕП.КУБ</span>
@@ -859,14 +854,6 @@
                                 <span class="value green" id="cfg-speedBodyCorr">100</span>
                                 <button class="corr-btn" onclick="adjCfg('speedBodyCorr',1)">+</button>
                             </div>
-                        </div>
-                        <div class="calc-row-data">
-                            <span class="label">КРЕП. КУБ</span>
-                            <span class="value" id="mon-abv-tank2" style="color:#8a95a8;">--%</span>
-                        </div>
-                        <div class="calc-row-data">
-                            <span class="label">КРЕП. ОТБОР</span>
-                            <span class="value" id="mon-abv-out2" style="color:#8a95a8;">--%</span>
                         </div>
                     </div>
                 </div>
@@ -1083,6 +1070,10 @@
                             <div>
                                 <div class="s-row"><label>WIFI ЧЕК (min)</label><div class="s-inputs"><button onclick="adjCfg('chekwifi',-1)">-</button><span id="cfg-chekwifi">5</span><button onclick="adjCfg('chekwifi',1)">+</button></div></div>
                             </div>
+                        </div>
+                        <!-- Test sound button -->
+                        <div style="margin-top:10px;">
+                            <button onclick="testAlarm()" style="width:100%;padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);color:var(--neon-amber);font-family:inherit;letter-spacing:0.05em;">🔊 ТЕСТ ЗВУКА</button>
                         </div>
                         <button class="save-btn" onclick="saveSettings('general')">СОХРАНИТЬ</button>
 
@@ -1392,9 +1383,6 @@
             setInd('ind-mixer',!!currentData.mixerOn);
             setInd('ind-water',!!currentData.waterValveOpen);
 
-            document.getElementById('pressure-value').textContent=Math.round(currentData.pressure||0);
-            document.getElementById('power-display').textContent=currentData.power||0;
-
             // Main action button
             const ab=document.getElementById('main-action-btn');
             const isRun=(currentData.process==1||currentData.process==2);
@@ -1464,7 +1452,7 @@
             document.getElementById('press-val-hud').textContent=Math.round(currentData.pressure||760);
             let pc=((currentData.pressure||760)-760)*0.037;let pct=(pc>=0?'+':'')+pc.toFixed(2);
             const pce=document.getElementById('press-corr-hud');pce.textContent=pct+'°';
-            updateBarometer(currentData.pressure||760);
+            if(!gaugeAnimating)updateBarometer(currentData.pressure||760);
 
             // Calculations
             updateCalculationsHUD();
@@ -1529,7 +1517,6 @@
             // ABV + REF
             const sb=currentData.str_bak_valid===true;const so=currentData.str_out_valid===true;
             hs('mon-abv-tank',sb?(currentData.str_bak||'--'):'--');hs('mon-abv-out',so?(currentData.str_out||'--'):'--');
-            hs('mon-abv-tank2',sb?(currentData.str_bak+'%'):'--%');hs('mon-abv-out2',so?(currentData.str_out+'%'):'--%');
             const rt=currentData.rtsarM||0;const ap=currentData.adPressM||0;
             hs('mon-ref-tsar',rt>0?rt.toFixed(2):'--');hs('mon-ref-press',ap>0?Math.round(ap*0.75):'--');
         }
@@ -1542,7 +1529,15 @@
             rings:[{key:'aqua',color:'#00f0ff',bg:'rgba(0,240,255,0.08)'},{key:'tank',color:'#a855f7',bg:'rgba(168,85,247,0.08)'},{key:'tsar',color:'#00ff88',bg:'rgba(0,255,136,0.08)'},{key:'tsa',color:'#ff8c00',bg:'rgba(255,140,0,0.08)'}],
             lw:12,rg:4,or:150};
 
-        function drawGauge(){
+        // Gauge animation vars
+        let gaugeAnimating=false;
+        let gaugeAnimationId=null;
+        const ANIM_EXPAND_MS=800;
+        const ANIM_PAUSE_MS=300;
+        const ANIM_COLLAPSE_MS=600;
+        const ANIM_RING_DELAY=150;
+
+        function drawGauge(animTemps){
             const cv=document.getElementById('gaugeCanvas');if(!cv)return;
             const ctx=cv.getContext('2d');const cx=cv.width/2;const cy=cv.height/2;
             ctx.clearRect(0,0,cv.width,cv.height);
@@ -1570,12 +1565,15 @@
             // Rings
             const tsaLimit=currentData.cfg?currentData.cfg.tsaLimit:999;
             for(let i=GS.rings.length-1;i>=0;i--){
-                const ring=GS.rings[i];let temp=currentData[ring.key]||0;
+                const ring=GS.rings[i];
+                let temp=currentData[ring.key]||0;
+                // Override temp if animation values provided
+                if(animTemps&&animTemps[i]!==undefined)temp=animTemps[i];
                 const rcr=GS.or-(GS.lw+GS.rg)*(GS.rings.length-1-i);
                 const pct=Math.min(1,Math.max(0,(temp-GS.minT)/range));
                 const va=GS.startA+(pct*aRange);
                 let rc=ring.color,rb=ring.bg;
-                if(ring.key==='tsa'&&temp>=tsaLimit){rc='#ff3355';rb='rgba(255,51,85,0.15)';}
+                if(ring.key==='tsa'&&temp>=tsaLimit&&!animTemps){rc='#ff3355';rb='rgba(255,51,85,0.15)';}
 
                 // Background arc
                 ctx.beginPath();ctx.arc(cx,cy,rcr,GS.startA,GS.endA);
@@ -1589,8 +1587,8 @@
                 }
             }
 
-            // TSA limit marker
-            if(currentData.cfg&&currentData.cfg.tsaLimit>0){
+            // TSA limit marker (skip during animation)
+            if(!animTemps&&currentData.cfg&&currentData.cfg.tsaLimit>0){
                 const lt=currentData.cfg.tsaLimit;const la=GS.startA+(lt/range)*aRange;
                 const rcr=GS.or;const ri=rcr-GS.lw/2;const ro=rcr+GS.lw/2;
                 ctx.save();ctx.translate(cx,cy);
@@ -1600,6 +1598,47 @@
                 ctx.fillText('TSA',Math.cos(la)*(ro+14),Math.sin(la)*(ro+14)+3);
                 ctx.restore();
             }
+        }
+
+        // === GAUGE ANIMATION (expand -> pause -> collapse to real values) ===
+        function animateGaugeEntry(){
+            if(gaugeAnimating)return;
+            gaugeAnimating=true;
+            const rings=GS.rings;const maxT=GS.maxT;
+            let startTime=null;let phase=1;
+
+            function animate(timestamp){
+                if(!startTime)startTime=timestamp;
+                if(phase===1){
+                    // Expand: all rings fill to max
+                    let vals=[];
+                    for(let i=0;i<rings.length;i++){
+                        let delay=i*ANIM_RING_DELAY;
+                        let p=Math.max(0,Math.min(1,(timestamp-startTime-delay)/ANIM_EXPAND_MS));
+                        vals[i]=p*maxT;
+                    }
+                    drawGauge(vals);
+                    let overallP=Math.min(1,(timestamp-startTime)/ANIM_EXPAND_MS);
+                    if(overallP<1){gaugeAnimationId=requestAnimationFrame(animate);}
+                    else{phase=2;startTime=timestamp;gaugeAnimationId=requestAnimationFrame(animate);}
+                }else if(phase===2){
+                    // Pause at full
+                    if(timestamp-startTime<ANIM_PAUSE_MS){gaugeAnimationId=requestAnimationFrame(animate);}
+                    else{phase=3;startTime=timestamp;gaugeAnimationId=requestAnimationFrame(animate);}
+                }else if(phase===3){
+                    // Collapse: rings shrink from max to real values
+                    let progress=Math.min((timestamp-startTime)/ANIM_COLLAPSE_MS,1);
+                    let vals=[];
+                    for(let i=0;i<rings.length;i++){
+                        let real=currentData[rings[i].key]||0;
+                        vals[i]=maxT-(maxT-real)*progress;
+                    }
+                    drawGauge(vals);
+                    if(progress<1){gaugeAnimationId=requestAnimationFrame(animate);}
+                    else{gaugeAnimating=false;drawGauge();}
+                }
+            }
+            gaugeAnimationId=requestAnimationFrame(animate);
         }
 
         // === PAGES ===
@@ -1700,6 +1739,15 @@
             if(typeof lucide!=='undefined')lucide.createIcons();
             updateCloudModeUI();
             updateUI();
+            // Animate gauge when switching to monitoring
+            if(name==='monitoring'){
+                animateGaugeEntry();
+                const baro=document.getElementById('baro-mercury');
+                if(baro)baro.style.height='0%';
+                setTimeout(()=>updateBarometer(currentData.pressure||760),50);
+            }else{
+                gaugeAnimating=false;
+            }
         }
 
         // === COMMANDS ===
