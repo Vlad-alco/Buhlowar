@@ -155,7 +155,7 @@
         /* === MAIN GRID (monitoring dashboard) === */
         .hud-main {
             display: grid;
-            grid-template-columns: 200px 1fr 160px;
+            grid-template-columns: 1fr 2.5fr 1fr;
             grid-template-rows: 1fr auto;
             gap: 6px;
             min-height: 0;
@@ -498,13 +498,12 @@
             display: none;
             height: 100%;
             overflow-y: auto;
+            width: 100%;
         }
         .page-secondary.active { display: block; }
-        .page-monitoring { display: block; }
+        .page-monitoring { display: grid; grid-template-columns: 1fr 2.5fr 1fr; grid-template-rows: 1fr auto; gap: 6px; width: 100%; }
 
         .page-inner {
-            max-width: 900px;
-            margin: 0 auto;
             padding: 12px;
         }
         .page-title {
@@ -632,7 +631,7 @@
         <main class="hud-main" id="hud-main">
 
             <!-- PAGE: MONITORING (default) -->
-            <div class="page-monitoring" id="page-monitoring" style="display:grid;grid-template-columns:200px 1fr 160px;grid-template-rows:1fr auto;gap:6px;">
+            <div class="page-monitoring" id="page-monitoring">
 
                 <!-- LEFT: TEMPERATURES -->
                 <div class="hud-panel temps-panel">
@@ -682,8 +681,8 @@
 
                 <!-- CENTER: GAUGE -->
                 <div class="hud-panel gauge-panel">
-                    <div class="gauge-wrapper">
-                        <canvas id="gaugeCanvas" width="280" height="280"></canvas>
+                    <div class="gauge-wrapper" style="width:min(100%,400px);height:min(100%,400px);aspect-ratio:1;">
+                        <canvas id="gaugeCanvas" width="400" height="400"></canvas>
                         <div class="gauge-center-info">
                             <div class="gauge-time" id="center-time-val">00:00</div>
                             <div class="gauge-stage" id="mon-stage">IDLE</div>
@@ -839,14 +838,21 @@
                     </div>
                     <div class="hud-panel" style="padding:14px;">
                         <div class="calc-title" style="color:var(--neon-blue);">Настройки</div>
-                        <div class="s-row"><label>РАЗГОН ДО</label><div class="s-inputs"><button onclick="adjCfg('razgonTemp',-1)">-</button><span id="cfg-razgonTemp">78</span><button onclick="adjCfg('razgonTemp',1)">+</button></div></div>
-                        <div class="s-row"><label>БАКСТОП</label><div class="s-inputs"><button onclick="adjCfg('bakStopTemp',-1)">-</button><span id="cfg-bakStopTemp">99</span><button onclick="adjCfg('bakStopTemp',1)">+</button></div></div>
-                        <div class="s-row"><label>СМЕНА ТАРЫ КУБ</label><div class="s-inputs"><button onclick="adjCfg('midterm',-1)">-</button><span id="cfg-midterm">0</span><button onclick="adjCfg('midterm',1)">+</button></div></div>
-                        <div class="s-row"><label>СМЕНА ТАРЫ ОТБОР</label><div class="s-inputs"><button onclick="adjCfg('midterm_abv',-1)">-</button><span id="cfg-midterm_abv">0</span><button onclick="adjCfg('midterm_abv',1)">+</button></div></div>
-                        <div class="s-row"><label>ТИП НАГРЕВА</label><button id="btn-heaterType" onclick="toggleCfg('heaterType')" class="bool-toggle off">TEN</button></div>
-                        <div class="s-row"><label>РАЗГОН НА ВСЮ</label><button id="btn-fullPwr" onclick="toggleCfg('fullPwr')" class="bool-toggle off">NO</button></div>
-                        <div class="s-row"><label>ИСП.КЛ.ОТБОРА</label><button id="btn-valveuse" onclick="toggleCfg('valveuse')" class="bool-toggle off">NO</button></div>
-                        <div class="s-row"><label>МЕШАЛКА</label><button id="btn-mixerEnabled" onclick="toggleCfg('mixerEnabled')" class="bool-toggle off">NO</button></div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 16px;">
+                            <div>
+                                <div class="s-row"><label>РАЗГОН ДО</label><div class="s-inputs"><button onclick="adjCfg('razgonTemp',-1)">-</button><span id="cfg-razgonTemp">78</span><button onclick="adjCfg('razgonTemp',1)">+</button></div></div>
+                                <div class="s-row"><label>БАКСТОП</label><div class="s-inputs"><button onclick="adjCfg('bakStopTemp',-1)">-</button><span id="cfg-bakStopTemp">99</span><button onclick="adjCfg('bakStopTemp',1)">+</button></div></div>
+                                <div class="s-row"><label>СМЕНА ТАРЫ КУБ</label><div class="s-inputs"><button onclick="adjCfg('midterm',-1)">-</button><span id="cfg-midterm">0</span><button onclick="adjCfg('midterm',1)">+</button></div></div>
+                            </div>
+                            <div>
+                                <div class="s-row"><label>СМЕНА ТАРЫ ОТБОР</label><div class="s-inputs"><button onclick="adjCfg('midterm_abv',-1)">-</button><span id="cfg-midterm_abv">0</span><button onclick="adjCfg('midterm_abv',1)">+</button></div></div>
+                                <div class="s-row"><label>ТИП НАГРЕВА</label><button id="btn-heaterType" onclick="toggleCfg('heaterType')" class="bool-toggle off">TEN</button></div>
+                                <div class="s-row"><label>РАЗГОН НА ВСЮ</label><button id="btn-fullPwr" onclick="toggleCfg('fullPwr')" class="bool-toggle off">NO</button></div>
+                            </div>
+                            <div>
+                                <div class="s-row"><label>ИСП.КЛ.ОТБОРА</label><button id="btn-valveuse" onclick="toggleCfg('valveuse')" class="bool-toggle off">NO</button></div>
+                                <div class="s-row"><label>МЕШАЛКА</label><button id="btn-mixerEnabled" onclick="toggleCfg('mixerEnabled')" class="bool-toggle off">NO</button></div>
+                            </div>
                         <button class="save-btn" onclick="saveSettings('dist')">СОХРАНИТЬ</button>
                     </div>
                 </div>
@@ -874,19 +880,22 @@
                     </div>
                     <div class="hud-panel" style="padding:14px;">
                         <div class="calc-title" style="color:var(--neon-blue);">Настройки</div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 16px;">
                             <div>
                                 <div class="s-row"><label>TSA ЛИМИТ</label><div class="s-inputs"><button onclick="adjCfg('tsaLimit',-1)">-</button><span id="cfg-tsaLimit">92</span><button onclick="adjCfg('tsaLimit',1)">+</button></div></div>
                                 <div class="s-row"><label>РАЗГОН ДО</label><div class="s-inputs"><button onclick="adjCfg('razgonTemp',-1)">-</button><span id="cfg-razgonTemp_rect">78</span><button onclick="adjCfg('razgonTemp',1)">+</button></div></div>
                                 <div class="s-row"><label>ЦИКЛЫ</label><div class="s-inputs"><button onclick="adjCfg('cycleLim',-1)">-</button><span id="cfg-cycleLim">1</span><button onclick="adjCfg('cycleLim',1)">+</button></div></div>
                                 <div class="s-row"><label>ГИСТЕРЕЗИС</label><div class="s-inputs"><button onclick="adjCfg('histeresis',-0.06)">-</button><span id="cfg-histeresis">0.24</span><button onclick="adjCfg('histeresis',0.06)">+</button></div></div>
-                                <div class="s-row"><label>ДЕЛЬТА</label><div class="s-inputs"><button onclick="adjCfg('delta',-0.06)">-</button><span id="cfg-delta">0.12</span><button onclick="adjCfg('delta',0.06)">+</button></div></div>
-                                <div class="s-row"><label>ТИП НАГРЕВА</label><button id="btn-heaterType_rect" onclick="toggleCfg('heaterType')" class="bool-toggle off">TEN</button></div>
                             </div>
                             <div>
+                                <div class="s-row"><label>ДЕЛЬТА</label><div class="s-inputs"><button onclick="adjCfg('delta',-0.06)">-</button><span id="cfg-delta">0.12</span><button onclick="adjCfg('delta',0.06)">+</button></div></div>
+                                <div class="s-row"><label>ТИП НАГРЕВА</label><button id="btn-heaterType_rect" onclick="toggleCfg('heaterType')" class="bool-toggle off">TEN</button></div>
                                 <div class="s-row"><label>КЛ.ГОЛОВ</label><button id="btn-useHeadValve" onclick="toggleCfg('useHeadValve')" class="bool-toggle off">NO</button></div>
                                 <div class="s-row"><label>КЛ.ТЕЛО</label><button id="btn-bodyValveNC" onclick="toggleCfg('bodyValveNC')" class="bool-toggle off">NO</button></div>
+                            </div>
+                            <div>
                                 <div class="s-row"><label>МЕТОД ГОЛОВ</label><button id="btn-headsTypeKSS" onclick="toggleCfg('headsTypeKSS')" class="bool-toggle off">ST</button></div>
+                                <div class="s-row"><label>КАЛИБРОВКА</label><button id="btn-calibration" onclick="toggleCfg('calibration')" class="bool-toggle off">NO</button></div>
                             </div>
                         </div>
                         <button class="save-btn" onclick="saveSettings('rect')">СОХРАНИТЬ</button>
@@ -929,13 +938,21 @@
                 <div class="page-inner">
                     <div class="page-title">Настройки</div>
                     <div class="hud-panel" style="padding:14px;">
-                        <div class="s-row"><label>АВАРИЯ (min)</label><div class="s-inputs"><button onclick="adjCfg('emergencyTime',-1)">-</button><span id="cfg-emergencyTime">3</span><button onclick="adjCfg('emergencyTime',1)">+</button></div></div>
-                        <div class="s-row"><label>НАСЕБЯ (min)</label><div class="s-inputs"><button onclick="adjCfg('nasebTime',-1)">-</button><span id="cfg-nasebTime">10</span><button onclick="adjCfg('nasebTime',1)">+</button></div></div>
-                        <div class="s-row"><label>ПОВТ.НАСЕБЯ (min)</label><div class="s-inputs"><button onclick="adjCfg('reklapTime',-1)">-</button><span id="cfg-reklapTime">10</span><button onclick="adjCfg('reklapTime',1)">+</button></div></div>
-                        <div class="s-row"><label>МАХ Т.СИСТ (C)</label><div class="s-inputs"><button onclick="adjCfg('boxMaxTemp',-1)">-</button><span id="cfg-boxMaxTemp">60</span><button onclick="adjCfg('boxMaxTemp',1)">+</button></div></div>
-                        <div class="s-row"><label>МОЩНОСТЬ (W)</label><div class="s-inputs"><button onclick="adjCfg('power',-100)">-</button><span id="cfg-power">3000</span><button onclick="adjCfg('power',100)">+</button></div></div>
-                        <div class="s-row"><label>КОЛ-ВО АС (ml)</label><div class="s-inputs"><button onclick="adjCfg('asVolume',-100)">-</button><span id="cfg-asVolume">1000</span><button onclick="adjCfg('asVolume',100)">+</button></div></div>
-                        <div class="s-row"><label>WIFI ЧЕК (min)</label><div class="s-inputs"><button onclick="adjCfg('chekwifi',-1)">-</button><span id="cfg-chekwifi">5</span><button onclick="adjCfg('chekwifi',1)">+</button></div></div>
+                        <div class="calc-title" style="color:var(--neon-blue);">Настройки</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 16px;">
+                            <div>
+                                <div class="s-row"><label>АВАРИЯ (min)</label><div class="s-inputs"><button onclick="adjCfg('emergencyTime',-1)">-</button><span id="cfg-emergencyTime">3</span><button onclick="adjCfg('emergencyTime',1)">+</button></div></div>
+                                <div class="s-row"><label>НАСЕБЯ (min)</label><div class="s-inputs"><button onclick="adjCfg('nasebTime',-1)">-</button><span id="cfg-nasebTime">10</span><button onclick="adjCfg('nasebTime',1)">+</button></div></div>
+                                <div class="s-row"><label>ПОВТ.НАСЕБЯ (min)</label><div class="s-inputs"><button onclick="adjCfg('reklapTime',-1)">-</button><span id="cfg-reklapTime">10</span><button onclick="adjCfg('reklapTime',1)">+</button></div></div>
+                            </div>
+                            <div>
+                                <div class="s-row"><label>МАХ Т.СИСТ (C)</label><div class="s-inputs"><button onclick="adjCfg('boxMaxTemp',-1)">-</button><span id="cfg-boxMaxTemp">60</span><button onclick="adjCfg('boxMaxTemp',1)">+</button></div></div>
+                                <div class="s-row"><label>МОЩНОСТЬ (W)</label><div class="s-inputs"><button onclick="adjCfg('power',-100)">-</button><span id="cfg-power">3000</span><button onclick="adjCfg('power',100)">+</button></div></div>
+                                <div class="s-row"><label>КОЛ-ВО АС (ml)</label><div class="s-inputs"><button onclick="adjCfg('asVolume',-100)">-</button><span id="cfg-asVolume">1000</span><button onclick="adjCfg('asVolume',100)">+</button></div></div>
+                            </div>
+                            <div>
+                                <div class="s-row"><label>WIFI ЧЕК (min)</label><div class="s-inputs"><button onclick="adjCfg('chekwifi',-1)">-</button><span id="cfg-chekwifi">5</span><button onclick="adjCfg('chekwifi',1)">+</button></div></div>
+                            </div>
                         <button class="save-btn" onclick="saveSettings('general')">СОХРАНИТЬ</button>
                     </div>
                 </div>
@@ -1177,7 +1194,7 @@
         // === GAUGE ===
         const GS={minT:0,maxT:105,startA:0.75*Math.PI,endA:2.25*Math.PI,
             rings:[{key:'aqua',color:'#00f0ff',bg:'rgba(0,240,255,0.08)'},{key:'tank',color:'#a855f7',bg:'rgba(168,85,247,0.08)'},{key:'tsar',color:'#00ff88',bg:'rgba(0,255,136,0.08)'},{key:'tsa',color:'#ff8c00',bg:'rgba(255,140,0,0.08)'}],
-            lw:10,rg:3,or:105};
+            lw:12,rg:4,or:150};
 
         function drawGauge(){
             const cv=document.getElementById('gaugeCanvas');if(!cv)return;
