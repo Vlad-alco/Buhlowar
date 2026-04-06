@@ -81,6 +81,8 @@
             border-radius: 6px;
             padding: 0 16px;
             backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
         }
         .hud-logo {
             display: flex;
@@ -123,6 +125,27 @@
             transition: all 0.3s;
         }
         .ind-dot.pulse { animation: pulse 2s infinite; }
+
+        /* === SAVE TOAST === */
+        .save-toast {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,255,136,0.15);
+            border: 1px solid rgba(0,255,136,0.4);
+            color: var(--neon-green);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            padding: 4px 16px;
+            border-radius: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+            text-shadow: 0 0 6px rgba(0,255,136,0.3);
+        }
+        .save-toast.show { opacity: 1; }
         @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
 
         .net-badge {
@@ -691,7 +714,9 @@
                 </div>
                 <span class="hud-logo-text">BUHLOWAR</span>
                 <div class="ind-dot pulse" id="esp32-status" style="background:var(--neon-green);box-shadow:0 0 6px var(--neon-green);"></div>
+                <div id="internet-dot" class="ind-dot" style="background:var(--neon-red);box-shadow:0 0 6px var(--neon-red);" title="Нет интернета"></div>
                 <div id="network-mode-badge" class="net-badge w">W</div>
+                <span id="save-toast" class="save-toast">СОХРАНЕНО</span>
             </div>
             <div class="hud-status-group">
                 <div class="hud-indicator" id="ind-heater"><div class="ind-dot" id="dot-heater"></div><span>НАГРЕВ</span></div>
@@ -1399,9 +1424,13 @@
         function updateUI(){
             checkSafetyAlarm();
 
-            // ESP32 status
+            // ESP32 connection status (green = API responds)
             const esp=document.getElementById('esp32-status');
-            if(esp){esp.style.background=currentData.online?'var(--neon-green)':'var(--neon-red)';esp.style.boxShadow=currentData.online?'0 0 6px var(--neon-green)':'0 0 6px var(--neon-red)';}
+            if(esp){const on=currentData.online!==undefined;esp.style.background=on?'var(--neon-green)':'var(--neon-red)';esp.style.boxShadow=on?'0 0 6px var(--neon-green)':'0 0 6px var(--neon-red)';}
+
+            // Internet indicator (green = internet access, red = no internet)
+            const inetDot=document.getElementById('internet-dot');
+            if(inetDot){const inet=currentData.online===true;if(inet){inetDot.style.background='var(--neon-green)';inetDot.style.boxShadow='0 0 6px var(--neon-green)';inetDot.title='Интернет есть';}else{inetDot.style.background='var(--neon-red)';inetDot.style.boxShadow='0 0 6px var(--neon-red)';inetDot.title='Нет интернета';}}
 
             // Network badge
             const nb=document.getElementById('network-mode-badge');
@@ -1573,27 +1602,35 @@
             ctx.clearRect(0,0,cv.width,cv.height);
             const range=GS.maxT-GS.minT;const aRange=GS.endA-GS.startA;
 
-            // Outer glow
+            // Outer glow (brighter)
             ctx.save();ctx.translate(cx,cy);
             ctx.beginPath();ctx.arc(0,0,GS.or+GS.lw+6,GS.startA,GS.endA);
-            ctx.strokeStyle='rgba(0,240,255,0.04)';ctx.lineWidth=12;ctx.stroke();
+            ctx.strokeStyle='rgba(0,240,255,0.08)';ctx.lineWidth=14;ctx.stroke();
             ctx.restore();
 
-            // Scale ticks
+            // Outer decorative ring
+            ctx.save();ctx.translate(cx,cy);
+            ctx.beginPath();ctx.arc(0,0,GS.or+GS.lw+13,GS.startA,GS.endA);
+            ctx.strokeStyle='rgba(0,240,255,0.12)';ctx.lineWidth=1;ctx.stroke();
+            ctx.restore();
+
+            // Scale ticks (brighter, every 1° step)
             ctx.save();ctx.translate(cx,cy);
             const tir=GS.or+GS.lw+4;
-            for(let t=0;t<=GS.maxT;t+=2.5){
+            for(let t=0;t<=GS.maxT;t+=1){
                 const a=GS.startA+(t/range)*aRange;
-                const maj=(t%10===0);const len=maj?10:(t%5===0?6:3);
+                const maj=(t%10===0);const mid=(t%5===0);const len=maj?12:(mid?8:3);
                 const r1=tir;const r2=tir+len;
                 ctx.beginPath();ctx.moveTo(Math.cos(a)*r1,Math.sin(a)*r1);ctx.lineTo(Math.cos(a)*r2,Math.sin(a)*r2);
-                ctx.strokeStyle=maj?'#2a3548':'#1a2538';ctx.lineWidth=maj?1.5:0.8;ctx.stroke();
-                if(maj){ctx.fillStyle='#3a4a60';ctx.font='8px Consolas,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t.toString(),Math.cos(a)*(r2+6),Math.sin(a)*(r2+6));}
+                ctx.strokeStyle=maj?'#4a5a70':(mid?'#3a4a60':'#2a3548');ctx.lineWidth=maj?2:(mid?1.2:0.6);ctx.stroke();
+                // Labels at major ticks
+                if(maj){ctx.fillStyle='#5a6a80';ctx.font='bold 8px Consolas,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t.toString(),Math.cos(a)*(r2+7),Math.sin(a)*(r2+7));}
             }
             ctx.restore();
 
             // Rings
-            const tsaLimit=currentData.cfg?currentData.cfg.tsaLimit:999;
+            const cfg=currentData.cfg||{};
+            const tsaLimit=cfg.tsaLimit||999;
             for(let i=GS.rings.length-1;i>=0;i--){
                 const ring=GS.rings[i];
                 let temp=currentData[ring.key]||0;
@@ -1617,16 +1654,26 @@
                 }
             }
 
-            // TSA limit marker (skip during animation)
-            if(!animTemps&&currentData.cfg&&currentData.cfg.tsaLimit>0){
-                const lt=currentData.cfg.tsaLimit;const la=GS.startA+(lt/range)*aRange;
+            // === MARKERS: TSA, БАК СТОП, РАЗГОН ДО (skip during animation) ===
+            if(!animTemps){
                 const rcr=GS.or;const ri=rcr-GS.lw/2;const ro=rcr+GS.lw/2;
-                ctx.save();ctx.translate(cx,cy);
-                ctx.beginPath();ctx.moveTo(Math.cos(la)*ri,Math.sin(la)*ri);ctx.lineTo(Math.cos(la)*ro,Math.sin(la)*ro);
-                ctx.strokeStyle='#ff3355';ctx.lineWidth=2;ctx.stroke();
-                ctx.fillStyle='#ff3355';ctx.font='bold 8px Consolas,monospace';ctx.textAlign='right';
-                ctx.fillText('TSA',Math.cos(la)*(ro+14),Math.sin(la)*(ro+14)+3);
-                ctx.restore();
+                const markers=[
+                    {val:tsaLimit,   label:'TSA',  color:'#ff3355', show:tsaLimit>0&&tsaLimit<GS.maxT},
+                    {val:cfg.bakStopTemp, label:'СТОП',color:'#a855f7', show:cfg.bakStopTemp>0&&cfg.bakStopTemp<GS.maxT},
+                    {val:cfg.razgonTemp,  label:'РАЗГ',color:'#ff8c00', show:cfg.razgonTemp>0&&cfg.razgonTemp<GS.maxT}
+                ];
+                markers.forEach(mk=>{
+                    if(!mk.show)return;
+                    const ma=GS.startA+(mk.val/range)*aRange;
+                    ctx.save();ctx.translate(cx,cy);
+                    // Line across all rings
+                    ctx.beginPath();ctx.moveTo(Math.cos(ma)*ri,Math.sin(ma)*ri);ctx.lineTo(Math.cos(ma)*ro,Math.sin(ma)*ro);
+                    ctx.strokeStyle=mk.color;ctx.lineWidth=2;ctx.stroke();
+                    // Label in upper-right corner at top of tick
+                    ctx.fillStyle=mk.color;ctx.font='bold 7px Consolas,monospace';ctx.textAlign='right';
+                    ctx.fillText(mk.label,Math.cos(ma)*(ro+14),Math.sin(ma)*(ro+14)+3);
+                    ctx.restore();
+                });
             }
         }
 
@@ -1817,11 +1864,17 @@
             fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({[key]:value})}).catch(()=>{});
         }
 
+        function showSaveToast(){
+            const t=document.getElementById('save-toast');if(!t)return;
+            t.classList.add('show');
+            setTimeout(()=>{t.classList.remove('show');},2000);
+        }
+
         function saveSettings(type){
             if(!currentData.cfg)return;
             let url='/api/settings';if(cloudMode&&cloudApiUrl)url=cloudApiUrl+'?settings=1';
             fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(currentData.cfg)})
-                .then(r=>r.text()).then(()=>{configDirty=false;}).catch(()=>{});
+                .then(r=>r.text()).then(()=>{configDirty=false;showSaveToast();}).catch(()=>{});
         }
 
         function startSensorCalib(s){sendCommand('IDENTIFY_'+s);}
