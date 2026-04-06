@@ -613,6 +613,36 @@
         }
         .save-btn:hover { background: rgba(0,240,255,0.2); }
 
+        /* === ACTION BUTTONS (same size as save-btn, different colors) === */
+        .action-btn {
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            font-family: inherit;
+            border: 1px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .action-btn.amber  { background: rgba(255,140,0,0.1);  border-color: rgba(255,140,0,0.3);  color: var(--neon-amber); }
+        .action-btn.amber:hover  { background: rgba(255,140,0,0.2); }
+        .action-btn.green  { background: rgba(0,255,136,0.1);  border-color: rgba(0,255,136,0.3);  color: var(--neon-green); }
+        .action-btn.green:hover  { background: rgba(0,255,136,0.2); }
+        .action-btn.blue   { background: rgba(0,240,255,0.1);  border-color: rgba(0,240,255,0.3);  color: var(--neon-blue); }
+        .action-btn.blue:hover   { background: rgba(0,240,255,0.2); }
+        .action-btn.purple { background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.3); color: var(--neon-purple); }
+        .action-btn.purple:hover { background: rgba(168,85,247,0.2); }
+
+        .action-btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
         /* === SCROLLBAR === */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -943,8 +973,8 @@
                             <div>
                                 <div class="s-row"><label>ДЕЛЬТА</label><div class="s-inputs"><button onclick="adjCfg('delta',-0.06)">-</button><span id="cfg-delta">0.12</span><button onclick="adjCfg('delta',0.06)">+</button></div></div>
                                 <div class="s-row"><label>ТИП НАГРЕВА</label><button id="btn-heaterType_rect" onclick="toggleCfg('heaterType')" class="bool-toggle off">TEN</button></div>
-                                <div class="s-row"><label>КЛ.ГОЛОВ</label><button id="btn-useHeadValve" onclick="toggleCfg('useHeadValve')" class="bool-toggle off">NO</button></div>
-                                <div class="s-row"><label>КЛ.ТЕЛО</label><button id="btn-bodyValveNC" onclick="toggleCfg('bodyValveNC')" class="bool-toggle off">NO</button></div>
+                                <div class="s-row"><label>ИСП.КЛ.ГОЛОВ</label><button id="btn-useHeadValve" onclick="toggleCfg('useHeadValve')" class="bool-toggle off">NO</button></div>
+                                <div class="s-row"><label>ТИП.КЛ.ТЕЛО</label><button id="btn-bodyValveNC" onclick="toggleCfg('bodyValveNC')" class="bool-toggle off">NO</button></div>
                             </div>
                             <div>
                                 <div class="s-row"><label>МЕТОД ГОЛОВ</label><button id="btn-headsTypeKSS" onclick="toggleCfg('headsTypeKSS')" class="bool-toggle off">ST</button></div>
@@ -1071,11 +1101,11 @@
                                 <div class="s-row"><label>WIFI ЧЕК (min)</label><div class="s-inputs"><button onclick="adjCfg('chekwifi',-1)">-</button><span id="cfg-chekwifi">5</span><button onclick="adjCfg('chekwifi',1)">+</button></div></div>
                             </div>
                         </div>
-                        <!-- Test sound button -->
-                        <div style="margin-top:10px;">
-                            <button onclick="testAlarm()" style="width:100%;padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);color:var(--neon-amber);font-family:inherit;letter-spacing:0.05em;">🔊 ТЕСТ ЗВУКА</button>
+                        <!-- СОХРАНИТЬ + ТЕСТ ЗВУКА -->
+                        <div class="action-btn-grid" style="margin-top:12px;">
+                            <button class="action-btn blue" onclick="saveSettings('general')">СОХРАНИТЬ</button>
+                            <button class="action-btn amber" onclick="testAlarm()">🔊 ТЕСТ ЗВУКА</button>
                         </div>
-                        <button class="save-btn" onclick="saveSettings('general')">СОХРАНИТЬ</button>
 
                         <!-- Cloud Mode Section -->
                         <div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(0,240,255,0.12);">
@@ -1086,17 +1116,17 @@
                             <p id="cloud-status" style="font-size:10px;color:#4a5568;margin-top:4px;"></p>
                         </div>
 
-                        <!-- Profile Buttons -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
-                            <button onclick="showSaveProfilePanel()" style="padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);color:var(--neon-amber);font-family:inherit;letter-spacing:0.05em;">СОХР. ПРОФИЛЬ</button>
-                            <button onclick="showLoadProfilePanel()" style="padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--neon-green);font-family:inherit;letter-spacing:0.05em;">ЗАГР. ПРОФИЛЬ</button>
+                        <!-- СОХР. ПРОФИЛЬ + ЗАГР. ПРОФИЛЬ -->
+                        <div class="action-btn-grid" style="margin-top:10px;">
+                            <button class="action-btn amber" onclick="showSaveProfilePanel()">СОХР. ПРОФИЛЬ</button>
+                            <button class="action-btn green" onclick="showLoadProfilePanel()">ЗАГР. ПРОФИЛЬ</button>
                         </div>
 
-                        <!-- Instructions Link -->
-                        <a href="/help.html" target="_blank" style="display:block;text-align:center;padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(0,240,255,0.1);border:1px solid rgba(0,240,255,0.3);color:var(--neon-blue);font-family:inherit;letter-spacing:0.05em;margin-top:8px;text-decoration:none;">ИНСТРУКЦИЯ</a>
-
-                        <!-- Logs Button -->
-                        <button onclick="cloudMode ? window.open(cloudApiUrl + '/?logs=1') : window.open('/api/logs')" style="width:100%;padding:8px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);color:var(--neon-purple);font-family:inherit;letter-spacing:0.05em;margin-top:8px;">ЛОГИ</button>
+                        <!-- ИНСТРУКЦИЯ + ЛОГИ -->
+                        <div class="action-btn-grid" style="margin-top:6px;">
+                            <a href="/help.html" target="_blank" class="action-btn blue">ИНСТРУКЦИЯ</a>
+                            <button class="action-btn purple" onclick="cloudMode ? window.open(cloudApiUrl + '/?logs=1') : window.open('/api/logs')">ЛОГИ</button>
+                        </div>
                     </div>
                 </div>
             </div>
