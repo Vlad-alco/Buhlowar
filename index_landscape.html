@@ -1127,7 +1127,7 @@
             <!-- PAGE: SETTINGS -->
             <div class="page-secondary" id="page-settings">
                 <div class="page-inner">
-                    <div class="page-title">Настройки</div>
+                    <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">Настройки<button onclick="openEngMenu()" style="background:none;border:1px solid rgba(255,140,0,0.25);border-radius:4px;color:rgba(255,140,0,0.5);cursor:pointer;padding:3px 10px;font-size:13px;font-family:inherit;line-height:1;" title="Инженерное меню">&#9881;</button></div>
                     <div class="hud-panel" style="padding:14px;">
                         <div class="calc-title" style="color:var(--neon-blue);">Настройки</div>
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 16px;">
@@ -1151,13 +1151,6 @@
                             <button class="action-btn amber" onclick="testAlarm()">🔊 ТЕСТ ЗВУКА</button>
                         </div>
 
-                        <!-- Инженерное меню (wrench) -->
-                        <div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,140,0,0.12);">
-                            <div style="display:flex;align-items:center;justify-content:space-between;">
-                                <div class="calc-title" style="color:rgba(255,140,0,0.5);font-size:10px;">ИНЖЕНЕРНОЕ МЕНЮ</div>
-                                <button onclick="openEngMenu()" style="background:none;border:1px solid rgba(255,140,0,0.2);border-radius:4px;color:#4a5568;cursor:pointer;padding:4px 10px;font-size:13px;font-family:inherit;" title="Инженерное меню">&#9881;</button>
-                            </div>
-                        </div>
 
                         <!-- Cloud Mode Section -->
                         <div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(0,240,255,0.12);">
@@ -1360,23 +1353,23 @@
 
             <!-- Section 1: Базовые скорости -->
             <div class="eng-section">
-                <div class="eng-section-title">СКОРОСТИ ЭКСТРАКЦИИ</div>
+                <div class="eng-section-title">СКОРОСТИ ОТБОРА</div>
                 <div class="s-row"><label>ГОЛОВЫ <span class="eng-unit">мл/ч/кВт</span></label><div class="s-inputs"><button onclick="adjEng('speedGolovyBase',-5)">-</button><span id="eng-speedGolovyBase">50</span><button onclick="adjEng('speedGolovyBase',5)">+</button></div></div>
                 <div class="s-row"><label>ТЕЛО <span class="eng-unit">мл/ч/кВт</span></label><div class="s-inputs"><button onclick="adjEng('speedTeloBase',-25)">-</button><span id="eng-speedTeloBase">500</span><button onclick="adjEng('speedTeloBase',25)">+</button></div></div>
-                <div class="s-row"><label>ДО ОТБОРА <span class="eng-unit">мл/ч</span></label><div class="s-inputs"><button onclick="adjEng('distHeadsSpeed',-5)">-</button><span id="eng-distHeadsSpeed">50</span><button onclick="adjEng('distHeadsSpeed',5)">+</button></div></div>
+                <div class="s-row"><label>ДООТБОР ГОЛОВЫ <span class="eng-unit">мл/ч</span></label><div class="s-inputs"><button onclick="adjEng('distHeadsSpeed',-5)">-</button><span id="eng-distHeadsSpeed">50</span><button onclick="adjEng('distHeadsSpeed',5)">+</button></div></div>
             </div>
 
             <!-- Section 2: Шпора -->
             <div class="eng-section">
                 <div class="eng-section-title">ПАРАМЕТРЫ ШПОРЫ</div>
-                <div class="s-row"><label>КОЭФФ. <span class="eng-unit">x.xx</span></label><div class="s-inputs"><button onclick="adjEng('shporaCorr',-0.01)">-</button><span id="eng-shporaCorr">1.13</span><button onclick="adjEng('shporaCorr',0.01)">+</button></div></div>
-                <div class="s-row"><label>СТАБИЛИЗАЦИЯ <span class="eng-unit">сек</span></label><div class="s-inputs"><button onclick="adjEng('shporaStabMs',-10,-1000)">-</button><span id="eng-shporaStabMs">60</span><button onclick="adjEng('shporaStabMs',10,-1000)">+</button></div></div>
-                <div class="s-row"><label>МИН. ТЕЛО <span class="eng-unit">мл/ч</span></label><div class="s-inputs"><button onclick="adjEng('minBodySpeed',-50)">-</button><span id="eng-minBodySpeed">300</span><button onclick="adjEng('minBodySpeed',50)">+</button></div></div>
+                <div class="s-row"><label>КОЭФФ.СНИЖЕНИЯ ОТБОРА <span class="eng-unit">x.xx</span></label><div class="s-inputs"><button onclick="adjEng('shporaCorr',-0.01)">-</button><span id="eng-shporaCorr">1.13</span><button onclick="adjEng('shporaCorr',0.01)">+</button></div></div>
+                <div class="s-row"><label>СТАБИЛИЗАЦИЯ (до след.снижения) <span class="eng-unit">сек</span></label><div class="s-inputs"><button onclick="adjEng('shporaStabMs',-10)">-</button><span id="eng-shporaStabMs">60</span><button onclick="adjEng('shporaStabMs',10)">+</button></div></div>
+                <div class="s-row"><label>МИН.СКОРОСТЬ ТЕЛО <span class="eng-unit">мл/ч</span></label><div class="s-inputs"><button onclick="adjEng('minBodySpeed',-50)">-</button><span id="eng-minBodySpeed">300</span><button onclick="adjEng('minBodySpeed',50)">+</button></div></div>
             </div>
 
             <!-- Section 3: Доли отбора -->
             <div class="eng-section">
-                <div class="eng-section-title">ДОЛИ ОТБОРА</div>
+                <div class="eng-section-title">ДОЛИ ОТБОРА ГОЛОВ</div>
                 <div class="s-row"><label>СТАНДАРТ <span class="eng-unit">%</span></label><div class="s-inputs"><button onclick="adjEng('headsShareStd',-1,-100)">-</button><span id="eng-headsShareStd">10</span><button onclick="adjEng('headsShareStd',1,-100)">+</button></div></div>
                 <div class="s-row"><label>КСС СПИТ <span class="eng-unit">%</span></label><div class="s-inputs"><button onclick="adjEng('headsShareKssSpit',-0.5,-100)">-</button><span id="eng-headsShareKssSpit">2</span><button onclick="adjEng('headsShareKssSpit',0.5,-100)">+</button></div></div>
                 <div class="s-row"><label>КСС СТАНД. <span class="eng-unit">%</span></label><div class="s-inputs"><button onclick="adjEng('headsShareKssStd',-0.5,-100)">-</button><span id="eng-headsShareKssStd">3</span><button onclick="adjEng('headsShareKssStd',0.5,-100)">+</button></div></div>
@@ -1386,15 +1379,15 @@
             <!-- Section 4: Давление -->
             <div class="eng-section">
                 <div class="eng-section-title">ДАВЛЕНИЕ</div>
-                <div class="s-row"><label>КОРРЕКЦИЯ <span class="eng-unit">°C/hPa</span></label><div class="s-inputs"><button onclick="adjEng('pressureCoeff',-0.001)">-</button><span id="eng-pressureCoeff">0.028</span><button onclick="adjEng('pressureCoeff',0.001)">+</button></div></div>
+                <div class="s-row"><label>КОЭФФ.КОРРЕКЦИИ ПО АД <span class="eng-unit">°C/hPa</span></label><div class="s-inputs"><button onclick="adjEng('pressureCoeff',-0.001)">-</button><span id="eng-pressureCoeff">0.028</span><button onclick="adjEng('pressureCoeff',0.001)">+</button></div></div>
             </div>
 
             <!-- Section 5: Времена -->
             <div class="eng-section">
-                <div class="eng-section-title">ВРЕМЕНА ПРОЦЕССОВ</div>
-                <div class="s-row"><label>ОХЛАЖДЕНИЕ <span class="eng-unit">сек</span></label><div class="s-inputs"><button onclick="adjEng('coolingDurationSec',-30)">-</button><span id="eng-coolingDurationSec">300</span><button onclick="adjEng('coolingDurationSec',30)">+</button></div></div>
+                <div class="eng-section-title">ВРЕМЯ ЭТАПОВ</div>
+                <div class="s-row"><label>ОСТАНОВ ОХЛАЖДЕНИЯ <span class="eng-unit">сек</span></label><div class="s-inputs"><button onclick="adjEng('coolingDurationSec',-30)">-</button><span id="eng-coolingDurationSec">300</span><button onclick="adjEng('coolingDurationSec',30)">+</button></div></div>
                 <div class="s-row"><label>БАКСТОП <span class="eng-unit">сек</span></label><div class="s-inputs"><button onclick="adjEng('bakstopDelaySec',-1)">-</button><span id="eng-bakstopDelaySec">5</span><button onclick="adjEng('bakstopDelaySec',1)">+</button></div></div>
-                <div class="s-row"><label>КАЛИБР. СУХОЙ <span class="eng-unit">сек</span></label><div class="s-inputs"><button onclick="adjEng('calibDrySec',-5)">-</button><span id="eng-calibDrySec">10</span><button onclick="adjEng('calibDrySec',5)">+</button></div></div>
+                <div class="s-row"><label>ПРОЛИВ <span class="eng-unit">сек</span></label><div class="s-inputs"><button onclick="adjEng('calibDrySec',-5)">-</button><span id="eng-calibDrySec">10</span><button onclick="adjEng('calibDrySec',5)">+</button></div></div>
                 <div class="s-row"><label>КАЛИБР. CAPACITY <span class="eng-unit">сек</span></label><div class="s-inputs"><button onclick="adjEng('calibCapacitySec',-10)">-</button><span id="eng-calibCapacitySec">60</span><button onclick="adjEng('calibCapacitySec',10)">+</button></div></div>
             </div>
 
@@ -2258,6 +2251,8 @@
     // Для полей "доли" храним в %. В API передаём /100.
     const engPctFields = ['headsShareStd','headsShareKssSpit','headsShareKssStd','headsShareKssAkatelo'];
     const engFloatFields = ['shporaCorr','pressureCoeff'];
+    // Поля хранящиеся в мс в C++, но отображаемые в секундах в UI
+    const engMsFields = ['shporaStabMs'];
 
     function openEngMenu(){
         engConfirmed = false;
@@ -2274,6 +2269,9 @@
                 el.textContent = eng[f] !== undefined ? Math.round(eng[f] * 100) : el.textContent;
             } else if(engFloatFields.includes(f)){
                 el.textContent = eng[f] !== undefined ? parseFloat(eng[f]).toFixed(3) : el.textContent;
+            } else if(engMsFields.includes(f)){
+                // C++ хранит в мс, отображаем в секундах
+                el.textContent = eng[f] !== undefined ? Math.round(eng[f] / 1000) : el.textContent;
             } else {
                 el.textContent = eng[f] !== undefined ? eng[f] : el.textContent;
             }
@@ -2320,6 +2318,9 @@
                 payload[f] = parseInt(el.textContent) / 100;
             } else if(engFloatFields.includes(f)){
                 payload[f] = parseFloat(el.textContent);
+            } else if(engMsFields.includes(f)){
+                // UI в секундах, C++ ожидает мс
+                payload[f] = parseInt(el.textContent) * 1000;
             } else {
                 payload[f] = parseInt(el.textContent);
             }
