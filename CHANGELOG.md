@@ -1,3 +1,41 @@
+## 2026-04-08 — Диапазоны параметров WEB интерфейса + синхронизация с LCD
+
+### index_landscape.html + menu_settings.h — cfgRanges для всех 21 параметра
+
+**Задача**: провести аудит и установить диапазоны (min/max) для ВСЕХ параметров в WEB интерфейсе и LCD меню, чтобы исключить ввод некорректных значений. Диапазоны должны быть общими для LCD и WEB.
+
+**Решение**:
+1. **Инфраструктура**: создан объект `cfgRanges` в WEB (аналог `engRanges` для инженерного меню). Функция `adjCfg()` переписана на использование `cfgRanges` вместо хардкодных проверок. Также добавлен массив `cfgAutoSave` — параметры с автосохранением при изменении (расширен с 3 до 9 полей).
+2. **Общие настройки (10 параметров)** — диапазоны установлены, LCD синхронизирован:
+   - emergencyTime: min=1, max=**10** (было max=5 в LCD)
+   - nasebTime: min=1, max=30 (=LCD)
+   - reklapTime: min=1, max=30 (=LCD)
+   - boxMaxTemp: min=50, max=70 (=LCD)
+   - power: min=100, max=**7000** (было max=3500)
+   - asVolume: min=1000, max=10000 (=LCD)
+   - speedHeadCorr: min=**10**, max=200 (было min=0 в WEB)
+   - speedBodyCorr: min=**10**, max=200 (было min=0 в WEB)
+   - minOpenTime: min=50, max=**2000** (было max=500 в LCD, max=1000 в WEB)
+   - chekwifi: min=1, max=5 (=LCD)
+3. **Дистилляция (6 параметров)** — диапазоны установлены (в LCD этих параметров нет, они настраиваются в меню процесса):
+   - razgonTemp: min=40, max=99
+   - bakStopTemp: min=50, max=99
+   - midterm: min=0, max=98 (связан с midterm_abv через температурно-крепостную зависимость)
+   - midterm_abv: min=0, max=98 (связан с midterm через getOutputABVForTemp/getTempForOutputABV)
+   - mixerOnTime: min=5, max=300
+   - mixerOffTime: min=1, max=120
+4. **Ректификация (5 параметров)** — диапазоны установлены:
+   - tsaLimit: min=40, max=55 (=LCD)
+   - cycleLim: min=1, max=**5** (было без лимитов в WEB)
+   - histeresis: min=0.06, max=1.00
+   - delta: min=0.06, max=1.00
+
+**Изменённые файлы**:
+- `index_landscape.html`: добавлен cfgRanges (21 параметр), cfgAutoSave, adjCfg() переписана
+- `menu_settings.h`: emergencyTime max 5→10, power max 3500→7000, minOpenTime max 500→2000
+
+---
+
 ## 2026-04-08 — Доработки инженерного меню WEB интерфейса
 
 ### index_landscape.html — переименования + перенос кнопки + фикс бага shporaStabMs
