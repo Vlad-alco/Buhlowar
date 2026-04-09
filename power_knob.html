@@ -137,6 +137,38 @@ body {
         const ns = 'http://www.w3.org/2000/svg';
         const totalSteps = (MAX_POWER - MIN_POWER) / STEP_MINOR;
 
+        // Нулевая риска (0) перед началом шкалы
+        const zeroRad = START_ANGLE * Math.PI / 180;
+        const z1x = CX + TICK_OUTER_R * Math.cos(zeroRad);
+        const z1y = CY + TICK_OUTER_R * Math.sin(zeroRad);
+        const z2x = CX + (TICK_OUTER_R - TICK_MAJOR_LEN) * Math.cos(zeroRad);
+        const z2y = CY + (TICK_OUTER_R - TICK_MAJOR_LEN) * Math.sin(zeroRad);
+        const zeroLine = document.createElementNS(ns, 'line');
+        zeroLine.setAttribute('x1', z1x); zeroLine.setAttribute('y1', z1y);
+        zeroLine.setAttribute('x2', z2x); zeroLine.setAttribute('y2', z2y);
+        zeroLine.setAttribute('stroke', 'rgba(255,140,0,0.7)');
+        zeroLine.setAttribute('stroke-width', '1.8');
+        zeroLine.setAttribute('stroke-linecap', 'round');
+        g.appendChild(zeroLine);
+        // Подпись "0" снаружи
+        const zlx = CX + LABEL_R * Math.cos(zeroRad);
+        const zly = CY + LABEL_R * Math.sin(zeroRad);
+        const zeroText = document.createElementNS(ns, 'text');
+        zeroText.setAttribute('x', zlx); zeroText.setAttribute('y', zly);
+        zeroText.setAttribute('fill', 'rgba(255,140,0,0.6)');
+        zeroText.setAttribute('font-family', "'Courier New', monospace");
+        zeroText.setAttribute('font-size', '9');
+        zeroText.setAttribute('font-weight', '600');
+        zeroText.setAttribute('text-anchor', 'middle');
+        zeroText.setAttribute('dominant-baseline', 'middle');
+        if (START_ANGLE > 180 && START_ANGLE < 360) {
+            zeroText.setAttribute('transform', 'rotate(' + (START_ANGLE - 180) + ', ' + zlx + ', ' + zly + ')');
+        } else {
+            zeroText.setAttribute('transform', 'rotate(' + START_ANGLE + ', ' + zlx + ', ' + zly + ')');
+        }
+        zeroText.textContent = '0';
+        g.appendChild(zeroText);
+
         for (let i = 0; i <= totalSteps; i++) {
             const power = MIN_POWER + i * STEP_MINOR;
             const frac = i / totalSteps;
@@ -157,8 +189,9 @@ body {
             line.setAttribute('y1', y1);
             line.setAttribute('x2', x2);
             line.setAttribute('y2', y2);
-            line.setAttribute('stroke', isMajor ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.15)');
-            line.setAttribute('stroke-width', isMajor ? '1.5' : '0.7');
+            // Цвет: мелкие — голубые, тысячные — оранжевые
+            line.setAttribute('stroke', isMajor ? 'rgba(255,140,0,0.7)' : 'rgba(0,200,255,0.35)');
+            line.setAttribute('stroke-width', isMajor ? '1.8' : '0.7');
             line.setAttribute('stroke-linecap', 'round');
             g.appendChild(line);
 
@@ -170,7 +203,7 @@ body {
                 const text = document.createElementNS(ns, 'text');
                 text.setAttribute('x', lx);
                 text.setAttribute('y', ly);
-                text.setAttribute('fill', 'rgba(255,255,255,0.5)');
+                text.setAttribute('fill', 'rgba(255,140,0,0.6)');
                 text.setAttribute('font-family', "'Courier New', monospace");
                 text.setAttribute('font-size', '9');
                 text.setAttribute('font-weight', '600');
@@ -185,7 +218,7 @@ body {
                     text.setAttribute('transform', 'rotate(' + textAngle + ', ' + lx + ', ' + ly + ')');
                 }
 
-                text.textContent = power >= 1000 ? (power / 1000) + 'k' : power.toString();
+                text.textContent = power.toString();
                 g.appendChild(text);
             }
         }
