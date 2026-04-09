@@ -779,6 +779,8 @@
                         </div>
                         <div class="temp-value temp-aqua" id="val-aqua-hud">--<span class="temp-unit">°</span></div>
                     </div>
+                    <!-- Power Knob (потенциометр) -->
+                    <div id="power-knob-container"></div>
                     <!-- Power / Box / Humidity -->
                     <div style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.03);padding:10px 12px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -1863,6 +1865,8 @@
             const sb=(id,v,t,f)=>{const e=document.getElementById(id);if(e){e.textContent=v?t:f;e.className='bool-toggle '+(v?'on':'off');}};
             sv('cfg-emergencyTime',cfg.emergencyTime);sv('cfg-nasebTime',cfg.nasebTime);sv('cfg-reklapTime',cfg.reklapTime);
             sv('cfg-boxMaxTemp',cfg.boxMaxTemp);sv('cfg-power',cfg.power);sv('cfg-asVolume',cfg.asVolume);sv('cfg-chekwifi',cfg.chekwifi);
+            // Инициализация и обновление power knob
+            if(typeof PowerKnob!=='undefined'){if(!PowerKnob.initialized)PowerKnob.init('power-knob-container');PowerKnob.update(cfg.power);}
             sv('cfg-razgonTemp',cfg.razgonTemp);sv('cfg-bakStopTemp',cfg.bakStopTemp);sv('cfg-midterm',cfg.midterm);sv('cfg-midterm_abv',cfg.midterm_abv);
             sb('btn-heaterType',cfg.heaterType==1,'IND','TEN');sb('btn-fullPwr',cfg.fullPwr,'YES','NO');sb('btn-valveuse',cfg.valveuse,'YES','NO');
             sb('btn-mixerEnabled',cfg.mixerEnabled,'YES','NO');
@@ -2353,5 +2357,6 @@
         }).catch(() => {});
     }
     </script>
+    <script src="./power_knob.js"></script>
 </body>
 </html>
