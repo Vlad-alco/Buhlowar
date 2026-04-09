@@ -1714,6 +1714,7 @@
                 const va=GS.startA+(pct*aRange);
                 let rc=ring.color,rb=ring.bg;
                 if(ring.key==='tsa'&&temp>=tsaLimit&&!animTemps){rc='#ff3355';rb='rgba(255,51,85,0.15)';}
+                if(ring.key==='aqua'&&temp>50&&!animTemps){rc='#ff3355';rb='rgba(255,51,85,0.15)';}
 
                 // Background arc
                 ctx.beginPath();ctx.arc(cx,cy,rcr,GS.startA,GS.endA);
@@ -1734,7 +1735,8 @@
                 const markers=[
                     {val:tsaLimit,      label:'TSA', color:'#ff3355', ringKey:'tsa',  show:tsaLimit>0&&tsaLimit<GS.maxT},
                     {val:cfg.bakStopTemp,label:'СТОП',color:'#f97316',ringKey:'tank', show:cfg.bakStopTemp>0&&cfg.bakStopTemp<GS.maxT},
-                    {val:cfg.midterm,   label:'TARA',color:'#facc15',ringKey:'tank', show:cfg.midterm>0&&cfg.midterm<GS.maxT}
+                    {val:cfg.midterm,   label:'TARA',color:'#facc15',ringKey:'tank', show:cfg.midterm>0&&cfg.midterm<GS.maxT},
+                    {val:50,            label:'50',  color:'#666666',ringKey:'aqua', show:true}
                 ];
                 markers.forEach(mk=>{
                     if(!mk.show)return;
