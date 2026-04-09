@@ -1876,10 +1876,10 @@
             sv('cfg-valve_head_capacity',cfg.valve_head_capacity);
             sv('cfg-valve_body_capacity',cfg.valve_body_capacity);
             sv('cfg-valve0_body_capacity',cfg.valve0_body_capacity);
-            const minOpen=(cfg.minOpenTime>=10&&cfg.minOpenTime<=1000)?cfg.minOpenTime:100;
+            const minOpen=(cfg.minOpenTime>=50&&cfg.minOpenTime<=2000)?cfg.minOpenTime:100;
             sv('cfg-minOpenTime',minOpen);if(cfg.minOpenTime!==minOpen)cfg.minOpenTime=minOpen;
-            const hc=(cfg.speedHeadCorr>=0&&cfg.speedHeadCorr<=200)?cfg.speedHeadCorr:100;
-            const bc=(cfg.speedBodyCorr>=0&&cfg.speedBodyCorr<=200)?cfg.speedBodyCorr:100;
+            const hc=(cfg.speedHeadCorr>=10&&cfg.speedHeadCorr<=200)?cfg.speedHeadCorr:100;
+            const bc=(cfg.speedBodyCorr>=10&&cfg.speedBodyCorr<=200)?cfg.speedBodyCorr:100;
             sv('cfg-speedHeadCorr',hc);sv('cfg-speedBodyCorr',bc);
             // Cloud settings
             const cloudUrlInput=document.getElementById('cfg-cloudUrl');
