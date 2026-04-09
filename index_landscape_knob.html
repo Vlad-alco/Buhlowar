@@ -1868,15 +1868,20 @@
 
         // === TSAR BAR INDICATOR ===
         // Vertical bar with zoomed range showing approach to DELTA and HYST thresholds
+        let _tsarBarW=0,_tsarBarH=0;
         function drawTsarBar(){
             const cv=document.getElementById('tsarBarCanvas');if(!cv)return;
             const wrap=cv.parentElement;if(!wrap)return;
-            // Resize canvas to container
+            // Resize canvas only if dimensions changed (avoids flicker)
             const dpr=window.devicePixelRatio||1;
             const cw=wrap.clientWidth;const ch=wrap.clientHeight;
-            cv.width=cw*dpr;cv.height=ch*dpr;
-            cv.style.width=cw+'px';cv.style.height=ch+'px';
-            const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+            if(cw!==_tsarBarW||ch!==_tsarBarH){
+                _tsarBarW=cw;_tsarBarH=ch;
+                cv.width=cw*dpr;cv.height=ch*dpr;
+                cv.style.width=cw+'px';cv.style.height=ch+'px';
+            }
+            const ctx=cv.getContext('2d');
+            ctx.setTransform(dpr,0,0,dpr,0,0);
             ctx.clearRect(0,0,cw,ch);
 
             const cfg=currentData.cfg||{};
