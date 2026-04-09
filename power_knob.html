@@ -197,9 +197,10 @@ body {
         const frac = (clamped - MIN_POWER) / (MAX_POWER - MIN_POWER);
         const angle = START_ANGLE + frac * SWEEP_ANGLE;
 
-        // Поворот указателя вокруг центра
+        // Поворот указателя: линия нарисована на 12 часов (0°), а шкала начинается от 135°
+        // поэтому нужен сдвиг +90° чтобы указатель совпал с делением
         const indicator = document.getElementById('indicatorGroup');
-        indicator.setAttribute('transform', 'rotate(' + angle + ', ' + CX + ', ' + CY + ')');
+        indicator.setAttribute('transform', 'rotate(' + (angle + 90) + ', ' + CX + ', ' + CY + ')');
     }
 
     // === Публичная функция ===
