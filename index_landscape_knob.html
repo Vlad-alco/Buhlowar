@@ -1715,6 +1715,9 @@
                 let rc=ring.color,rb=ring.bg;
                 if(ring.key==='tsa'&&temp>=tsaLimit&&!animTemps){rc='#ff3355';rb='rgba(255,51,85,0.15)';}
 
+                // Background arc
+                ctx.beginPath();ctx.arc(cx,cy,rcr,GS.startA,GS.endA);
+                ctx.strokeStyle=rb;ctx.lineWidth=GS.lw;ctx.lineCap='butt';ctx.stroke();
                 // Value arc with glow
                 if(temp>GS.minT){
                     ctx.save();ctx.shadowColor=rc;ctx.shadowBlur=8;
