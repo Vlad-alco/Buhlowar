@@ -19,22 +19,20 @@ body {
 
 .knob-container {
     position: relative;
-    width: 260px;
-    height: 260px;
+    width: 220px;
+    height: 220px;
 }
 
 .knob-svg {
     width: 100%;
     height: 100%;
 }
-
-/* Деления и подписи генерируются JS */
 </style>
 </head>
 <body>
 
 <div class="knob-container">
-    <svg class="knob-svg" viewBox="0 0 260 260" id="knobSvg">
+    <svg class="knob-svg" viewBox="0 0 220 220" id="knobSvg">
         <defs>
             <!-- Металлический градиент для ручки -->
             <radialGradient id="knobMetal" cx="45%" cy="40%" r="55%">
@@ -48,7 +46,7 @@ body {
                 <stop offset="0%" style="stop-color:rgba(255,255,255,0.12)"/>
                 <stop offset="100%" style="stop-color:rgba(255,255,255,0)"/>
             </radialGradient>
-            <!-- Градиент скоса (facet) для 3D эффекта -->
+            <!-- Скос края для 3D -->
             <radialGradient id="knobEdge" cx="50%" cy="50%" r="50%">
                 <stop offset="85%" style="stop-color:rgba(255,255,255,0)"/>
                 <stop offset="95%" style="stop-color:rgba(255,255,255,0.04)"/>
@@ -62,48 +60,37 @@ body {
         </defs>
 
         <!-- Подложка с свечением -->
-        <circle cx="130" cy="130" r="120" fill="url(#baseGlow)"/>
+        <circle cx="110" cy="110" r="108" fill="url(#baseGlow)"/>
 
-        <!-- Внешнее кольцо (кольцо шкалы) -->
-        <circle cx="130" cy="130" r="118" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-
-        <!-- Деления и подписи генерируются JS (группа tickGroup) -->
+        <!-- Деления и подписи -->
         <g id="tickGroup"></g>
 
         <!-- Шайба ручки — тень -->
-        <circle cx="130" cy="132" r="55" fill="rgba(0,0,0,0.4)" filter="blur(4px)"/>
+        <circle cx="110" cy="112" r="50" fill="rgba(0,0,0,0.4)" filter="url(#shadowBlur)"/>
+        <defs>
+            <filter id="shadowBlur"><feGaussianBlur in="SourceGraphic" stdDeviation="3"/></filter>
+        </defs>
 
-        <!-- Шайба ручки — основное тело -->
-        <circle cx="130" cy="130" r="55" fill="url(#knobMetal)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <!-- Шайба ручки — тело -->
+        <circle cx="110" cy="110" r="50" fill="url(#knobMetal)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
 
-        <!-- Насечки на ручке (knurling) -->
+        <!-- Насечки (knurling) -->
         <g id="knurlGroup" opacity="0.3"></g>
 
-        <!-- Блик на ручке -->
-        <circle cx="130" cy="130" r="55" fill="url(#knobHighlight)"/>
+        <!-- Блик -->
+        <circle cx="110" cy="110" r="50" fill="url(#knobHighlight)"/>
+        <!-- Скос -->
+        <circle cx="110" cy="110" r="50" fill="url(#knobEdge)"/>
 
-        <!-- Скос края ручки -->
-        <circle cx="130" cy="130" r="55" fill="url(#knobEdge)"/>
+        <!-- Втулка -->
+        <circle cx="110" cy="110" r="11" fill="#1a1e26" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <circle cx="110" cy="110" r="7" fill="#0d1015" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
 
-        <!-- Центральная втулка -->
-        <circle cx="130" cy="130" r="12" fill="#1a1e26" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-        <circle cx="130" cy="130" r="8" fill="#0d1015" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
-
-        <!-- Белая линия-указатель на ручке -->
+        <!-- Белая линия-указатель -->
         <g id="indicatorGroup">
-            <line x1="130" y1="78" x2="130" y2="95" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round"/>
-            <line x1="130" y1="78" x2="130" y2="95" stroke="rgba(0,240,255,0.4)" stroke-width="3.5" stroke-linecap="round" filter="blur(2px)"/>
+            <line x1="110" y1="62" x2="110" y2="78" stroke="rgba(0,240,255,0.4)" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="110" y1="62" x2="110" y2="78" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round"/>
         </g>
-
-        <!-- Цифровое значение под ручкой -->
-        <text x="130" y="210" id="knobValueText" fill="#00f0ff"
-              font-family="'Courier New', monospace" font-size="20" font-weight="700"
-              text-anchor="middle" dominant-baseline="middle"
-              filter="drop-shadow(0 0 6px rgba(0,240,255,0.5))">3000</text>
-        <text x="130" y="226" fill="rgba(0,240,255,0.4)"
-              font-family="'Courier New', monospace" font-size="8" font-weight="400"
-              text-anchor="middle" dominant-baseline="middle"
-              letter-spacing="0.2em">WATT</text>
     </svg>
 </div>
 
@@ -113,43 +100,38 @@ body {
     const MAX_POWER = 7000;
     const STEP_MAJOR = 1000;     // крупные деления (1 кВт)
     const STEP_MINOR = 100;      // мелкие деления (100 Вт)
-    const START_ANGLE = 135;     // начальный угол (нижний левый)
+    const START_ANGLE = 135;     // начальный угол дуги (нижний левый)
     const SWEEP_ANGLE = 270;     // sweep дуги (градусы)
-    const TICK_OUTER_R = 115;    // радиус внешнего края делений
-    const TICK_MAJOR_LEN = 12;   // длина крупного деления
-    const TICK_MINOR_LEN = 6;    // длина мелкого деления
-    const LABEL_R = 100;         // радиус подписей (наружу от делений... нет, внутрь от них)
+    const TICK_OUTER_R = 68;     // радиус внешнего края делений (рядом с ручкой)
+    const TICK_MAJOR_LEN = 10;   // длина крупного деления
+    const TICK_MINOR_LEN = 5;    // длина мелкого деления
+    const LABEL_R = 82;          // радиус подписей (снаружи от делений)
 
-    const CX = 130, CY = 130;
+    const CX = 110, CY = 110;
     let currentPower = 3000;
 
-    // === Генерация насечек на ручке (knurling) ===
+    // === Насечки на ручке (knurling) ===
     function createKnurling() {
         const g = document.getElementById('knurlGroup');
         const ns = 'http://www.w3.org/2000/svg';
-        const count = 60; // количество насечек
-        const innerR = 49, outerR = 54;
+        const count = 60;
+        const innerR = 44, outerR = 49;
 
         for (let i = 0; i < count; i++) {
             const angle = (i / count) * 360;
             const rad = angle * Math.PI / 180;
-            const x1 = CX + innerR * Math.cos(rad);
-            const y1 = CY + innerR * Math.sin(rad);
-            const x2 = CX + outerR * Math.cos(rad);
-            const y2 = CY + outerR * Math.sin(rad);
-
             const line = document.createElementNS(ns, 'line');
-            line.setAttribute('x1', x1);
-            line.setAttribute('y1', y1);
-            line.setAttribute('x2', x2);
-            line.setAttribute('y2', y2);
+            line.setAttribute('x1', CX + innerR * Math.cos(rad));
+            line.setAttribute('y1', CY + innerR * Math.sin(rad));
+            line.setAttribute('x2', CX + outerR * Math.cos(rad));
+            line.setAttribute('y2', CY + outerR * Math.sin(rad));
             line.setAttribute('stroke', 'rgba(255,255,255,0.5)');
             line.setAttribute('stroke-width', '0.5');
             g.appendChild(line);
         }
     }
 
-    // === Генерация делений и подписей ===
+    // === Деления и подписи ===
     function createTicks() {
         const g = document.getElementById('tickGroup');
         const ns = 'http://www.w3.org/2000/svg';
@@ -164,7 +146,7 @@ body {
             const isMajor = (power % STEP_MAJOR === 0);
             const tickLen = isMajor ? TICK_MAJOR_LEN : TICK_MINOR_LEN;
 
-            // Деления: от внешнего края внутрь
+            // Деления: от внешнего края внутрь (к ручке)
             const x1 = CX + TICK_OUTER_R * Math.cos(rad);
             const y1 = CY + TICK_OUTER_R * Math.sin(rad);
             const x2 = CX + (TICK_OUTER_R - tickLen) * Math.cos(rad);
@@ -175,74 +157,49 @@ body {
             line.setAttribute('y1', y1);
             line.setAttribute('x2', x2);
             line.setAttribute('y2', y2);
-            line.setAttribute('stroke', isMajor ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.18)');
-            line.setAttribute('stroke-width', isMajor ? '1.8' : '0.8');
+            line.setAttribute('stroke', isMajor ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.15)');
+            line.setAttribute('stroke-width', isMajor ? '1.5' : '0.7');
             line.setAttribute('stroke-linecap', 'round');
             g.appendChild(line);
 
-            // Подписи для крупных делений — значения НАРУЖУ
+            // Подписи для крупных делений — снаружи
             if (isMajor) {
-                const labelR = TICK_OUTER_R + 14; // outside the ticks
-                const lx = CX + labelR * Math.cos(rad);
-                const ly = CY + labelR * Math.sin(rad);
+                const lx = CX + LABEL_R * Math.cos(rad);
+                const ly = CY + LABEL_R * Math.sin(rad);
 
                 const text = document.createElementNS(ns, 'text');
                 text.setAttribute('x', lx);
                 text.setAttribute('y', ly);
-                text.setAttribute('fill', 'rgba(255,255,255,0.55)');
+                text.setAttribute('fill', 'rgba(255,255,255,0.5)');
                 text.setAttribute('font-family', "'Courier New', monospace");
-                text.setAttribute('font-size', '11');
+                text.setAttribute('font-size', '9');
                 text.setAttribute('font-weight', '600');
                 text.setAttribute('text-anchor', 'middle');
                 text.setAttribute('dominant-baseline', 'middle');
 
-                // Поворачиваем текст чтобы читался снаружи (радиально)
-                // Для левой полусферы (+90..+270° от начального угла) переворачиваем
+                // Поворот текста: чтобы читался естественно снаружи
                 const textAngle = angle;
-                // Если текст в нижней-левой части (135-315° нативных), он будет вверх ногами
-                // Поэтому переворачиваем на 180° для лучшей читаемости
                 if (textAngle > 180 && textAngle < 360) {
-                    text.setAttribute('transform',
-                        'rotate(' + (textAngle - 180) + ', ' + lx + ', ' + ly + ')');
+                    text.setAttribute('transform', 'rotate(' + (textAngle - 180) + ', ' + lx + ', ' + ly + ')');
                 } else {
-                    text.setAttribute('transform',
-                        'rotate(' + textAngle + ', ' + lx + ', ' + ly + ')');
+                    text.setAttribute('transform', 'rotate(' + textAngle + ', ' + lx + ', ' + ly + ')');
                 }
 
-                const label = power >= 1000 ? (power / 1000) + 'k' : power.toString();
-                text.textContent = label;
+                text.textContent = power >= 1000 ? (power / 1000) + 'k' : power.toString();
                 g.appendChild(text);
             }
         }
     }
 
-    // === Обновление положения ручки ===
+    // === Обновление ручки ===
     function updateKnob(power) {
         const clamped = Math.max(MIN_POWER, Math.min(MAX_POWER, power));
         const frac = (clamped - MIN_POWER) / (MAX_POWER - MIN_POWER);
         const angle = START_ANGLE + frac * SWEEP_ANGLE;
 
-        // Поворот группы указателя (белая линия)
+        // Поворот указателя вокруг центра
         const indicator = document.getElementById('indicatorGroup');
-        // Указатель нарисован на 0° (верх), нужно повернуть на angle
-        // Но 0° в SVG = верх, а START_ANGLE=135° = нижний левый
-        // Указатель должен быть на angle от 0° по часовой стрелке от верха
-        indicator.style.transformOrigin = CX + 'px ' + CY + 'px';
-        indicator.style.transform = 'rotate(' + angle + 'deg)';
-        indicator.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-
-        // Цвет значения
-        const valEl = document.getElementById('knobValueText');
-        if (clamped >= 6000) {
-            valEl.setAttribute('fill', '#ff6600');
-            valEl.setAttribute('filter', 'drop-shadow(0 0 6px rgba(255,102,0,0.5))');
-        } else {
-            valEl.setAttribute('fill', '#00f0ff');
-            valEl.setAttribute('filter', 'drop-shadow(0 0 6px rgba(0,240,255,0.5))');
-        }
-
-        // Обновляем текст
-        valEl.textContent = clamped;
+        indicator.setAttribute('transform', 'rotate(' + angle + ', ' + CX + ', ' + CY + ')');
     }
 
     // === Публичная функция ===
@@ -255,8 +212,6 @@ body {
     createKnurling();
     createTicks();
     setPower(3000);
-
-    // Для ручного теста в консоли браузера: setPower(5000)
 </script>
 
 </body>
