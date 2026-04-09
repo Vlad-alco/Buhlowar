@@ -390,6 +390,74 @@
             font-weight: 600;
         }
 
+        /* === TSAR BAR INDICATOR (center-right) === */
+        .tsar-bar-panel {
+            grid-row: 1 / 3;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .tsar-bar-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            min-height: 0;
+        }
+        .tsar-bar-canvas-wrap {
+            width: 100%;
+            height: 100%;
+            max-height: 500px;
+            position: relative;
+        }
+        .tsar-bar-canvas-wrap canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .tsar-bar-values {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 4px;
+            border-top: 1px solid rgba(255,255,255,0.03);
+        }
+        .tsar-bar-cur-val {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 8px rgba(0,255,136,0.3);
+            font-variant-numeric: tabular-nums;
+        }
+        .tsar-bar-cur-val.warn { color: var(--neon-amber); text-shadow: 0 0 8px rgba(255,140,0,0.3); }
+        .tsar-bar-cur-val.danger { color: var(--neon-red); text-shadow: 0 0 8px rgba(255,51,85,0.3); }
+        .tsar-bar-cur-label {
+            font-size: 8px;
+            color: #6a7588;
+            letter-spacing: 0.12em;
+        }
+        .tsar-bar-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            padding: 2px 4px;
+        }
+        .tsar-bar-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 8px;
+            color: #6a7588;
+        }
+        .tsar-bar-legend-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 1px;
+        }
+
         /* === SYSTEM INFO (right bottom) === */
         .sys-panel { flex: 0 0 auto; min-width: 0; }
         .sys-grid {
@@ -541,11 +609,11 @@
         .page-secondary.active { display: block; }
         .page-monitoring {
             display: grid;
-            grid-template-columns: minmax(160px, 1fr) minmax(220px, 2.5fr) minmax(120px, 1fr);
+            grid-template-columns: minmax(160px, 1fr) minmax(220px, 2.5fr) minmax(140px, 1.2fr) minmax(120px, 1fr);
             grid-template-rows: 1fr 1fr auto;
             gap: 6px;
             width: 100%;
-            min-width: 540px;
+            min-width: 680px;
         }
         /* Bottom calc row spans full width in row 3 */
         .monitor-bottom-row {
@@ -812,6 +880,25 @@
                         <div class="status-tag normal" id="mon-sys-status">НОРМА</div>
                         <span class="status-counter" id="mon-counter">00:00</span>
                         <span class="status-counter" id="mon-method" style="color:var(--neon-purple);"></span>
+                    </div>
+                </div>
+
+                <!-- CENTER-RIGHT: TSAR BAR INDICATOR -->
+                <div class="hud-panel tsar-bar-panel">
+                    <div class="hud-panel-title" style="color:var(--neon-green);">Контроль ЦАРГИ</div>
+                    <div class="tsar-bar-body">
+                        <div class="tsar-bar-canvas-wrap">
+                            <canvas id="tsarBarCanvas" width="280" height="500"></canvas>
+                        </div>
+                    </div>
+                    <div class="tsar-bar-values">
+                        <div class="tsar-bar-cur-val" id="tsar-bar-cur">--</div>
+                        <div class="tsar-bar-cur-label">ТЕКУЩАЯ °C</div>
+                    </div>
+                    <div class="tsar-bar-legend">
+                        <div class="tsar-bar-legend-item"><div class="tsar-bar-legend-dot" style="background:#22d3ee;"></div>BASE</div>
+                        <div class="tsar-bar-legend-item"><div class="tsar-bar-legend-dot" style="background:#f59e0b;"></div>DELTA</div>
+                        <div class="tsar-bar-legend-item"><div class="tsar-bar-legend-dot" style="background:#ef4444;"></div>HYST</div>
                     </div>
                 </div>
 
@@ -1612,6 +1699,9 @@
 
             // Gauge
             drawGauge();
+
+            // TSAR bar indicator
+            drawTsarBar();
         }
 
         function updateCalculationsHUD(){
@@ -1743,23 +1833,15 @@
                 }
             }
 
-            // === MARKERS: TSA on outer ring, СТОП and TARA on tank ring, ТЕЛО end on tsar ring (skip during animation) ===
+            // === MARKERS: TSA on outer ring, СТОП and TARA on tank ring (skip during animation) ===
             if(!animTemps){
                 // Ring indices: 0=aqua(inner), 1=tank, 2=tsar, 3=tsa(outer)
                 const ringIdx={tsa:3,tank:1,tsar:2,aqua:0};
-                // ТЕЛО end threshold: rtsarM + histeresis + pressureCorrection (real-time)
-                // ESP32 sends pressure in mmHg (×0.75), but adPressM in raw hPa — convert to same units
-                const rtsarM=currentData.rtsarM||0;
-                const adPressMmHg=(currentData.adPressM||0)*0.75;
-                const pressDiffMmHg=(currentData.pressure||760)-adPressMmHg;
-                // pressureCoeff is per hPa; convert mmHg diff to hPa: /0.75
-                const teloEnd=rtsarM>0.1?(rtsarM+(cfg.histeresis||0.24)+(pressDiffMmHg/0.75)*(cfg.pressureCoeff||0.028)):0;
                 const markers=[
                     {val:tsaLimit,      label:'TSA',      color:'#ff3355', ringKey:'tsa',  show:tsaLimit>0&&tsaLimit<GS.maxT},
                     {val:cfg.bakStopTemp,label:'СТОП',     color:'#f97316', ringKey:'tank', show:cfg.bakStopTemp>0&&cfg.bakStopTemp<GS.maxT},
                     {val:cfg.midterm,   label:'TARA',     color:'#facc15', ringKey:'tank', show:cfg.midterm>0&&cfg.midterm<GS.maxT},
                     {val:50,            label:'50',       color:'#666666', ringKey:'aqua', show:true},
-                    {val:teloEnd,        label:teloEnd.toFixed(1), color:'#00ff88', ringKey:'tsar', show:teloEnd>0&&teloEnd<GS.maxT}
                 ];
                 markers.forEach(mk=>{
                     if(!mk.show)return;
@@ -1776,6 +1858,172 @@
                     ctx.fillText(mk.label,Math.cos(ma)*(ro+14),Math.sin(ma)*(ro+14)+3);
                     ctx.restore();
                 });
+            }
+        }
+
+        // === TSAR BAR INDICATOR ===
+        // Vertical bar with zoomed range showing approach to DELTA and HYST thresholds
+        function drawTsarBar(){
+            const cv=document.getElementById('tsarBarCanvas');if(!cv)return;
+            const wrap=cv.parentElement;if(!wrap)return;
+            // Resize canvas to container
+            const dpr=window.devicePixelRatio||1;
+            const cw=wrap.clientWidth;const ch=wrap.clientHeight;
+            cv.width=cw*dpr;cv.height=ch*dpr;
+            cv.style.width=cw+'px';cv.style.height=ch+'px';
+            const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+            ctx.clearRect(0,0,cw,ch);
+
+            const cfg=currentData.cfg||{};
+            const stage=currentData.stage||'';
+            const isTelo=(stage==='TELO'||stage==='NASEBYA');
+            const tsar=currentData.tsar||0;
+            const rtsarM=currentData.rtsarM||0;
+            const delta=cfg.delta||0.06;
+            const hyst=cfg.histeresis||0.24;
+            const pressureCoeff=cfg.pressureCoeff||0.028;
+            // Pressure correction (convert units like in gauge)
+            const adPressMmHg=(currentData.adPressM||0)*0.75;
+            const pressDiffMmHg=(currentData.pressure||760)-adPressMmHg;
+            const pressCorr=(pressDiffMmHg/0.75)*pressureCoeff;
+
+            // Thresholds
+            let baseVal, deltaVal, hystVal;
+            if(rtsarM>0.1){
+                baseVal=rtsarM;
+                deltaVal=rtsarM+delta+pressCorr;
+                hystVal=rtsarM+hyst+pressCorr;
+            }else{
+                // Before TELO: use current tsar as base with default offsets
+                baseVal=tsar||78;
+                deltaVal=baseVal+delta;
+                hystVal=baseVal+hyst;
+            }
+
+            // Dynamic range: base-0.2 .. hyst+0.2
+            const rangeMin=baseVal-0.20;
+            const rangeMax=hystVal+0.20;
+            const rangeW=rangeMax-rangeMin;
+
+            // Bar geometry (centered horizontally)
+            const barW=Math.min(50,cw*0.3);
+            const barX=(cw-barW)/2;
+            const padTop=10;const padBot=10;
+            const barH=ch-padTop-padBot;
+
+            const tempToY=(t)=>{return padTop+((rangeMax-t)/rangeW)*barH;};
+
+            // Grayscale multiplier when not TELO
+            const sat=isTelo?1.0:0.25;
+
+            // Helper: color with saturation
+            function sc(hex,alpha){
+                if(sat>=1.0)return hex;
+                // Parse hex and desaturate
+                const r=parseInt(hex.slice(1,3),16);
+                const g=parseInt(hex.slice(3,5),16);
+                const b=parseInt(hex.slice(5,7),16);
+                const gray=Math.round(r*0.299+g*0.587+b*0.114);
+                const nr=Math.round(gray+(r-gray)*sat);
+                const ng=Math.round(gray+(g-gray)*sat);
+                const nb=Math.round(gray+(b-gray)*sat);
+                return '#'+[nr,ng,nb].map(c=>c.toString(16).padStart(2,'0')).join('');
+            }
+
+            // Gradient fill (top=red, mid=amber, bottom=cyan)
+            const grad=ctx.createLinearGradient(0,padTop,0,padTop+barH);
+            grad.addColorStop(0,sc('#ef4444'));
+            grad.addColorStop(0.4,sc('#f59e0b'));
+            grad.addColorStop(0.7,sc('#10b981'));
+            grad.addColorStop(1,sc('#06b6d4'));
+            ctx.fillStyle=grad;
+            // Rounded rect
+            const br=4;
+            ctx.beginPath();
+            ctx.moveTo(barX+br,padTop);ctx.lineTo(barX+barW-br,padTop);ctx.quadraticCurveTo(barX+barW,padTop,barX+barW,padTop+br);
+            ctx.lineTo(barX+barW,padTop+barH-br);ctx.quadraticCurveTo(barX+barW,padTop+barH,barX+barW-br,padTop+barH);
+            ctx.lineTo(barX+br,padTop+barH);ctx.quadraticCurveTo(barX,padTop+barH,barX,padTop+barH-br);
+            ctx.lineTo(barX,padTop+br);ctx.quadraticCurveTo(barX,padTop,barX+br,padTop);
+            ctx.closePath();ctx.fill();
+
+            // Dim above current temp
+            const curY=tempToY(tsar);
+            if(curY>padTop){
+                ctx.save();ctx.beginPath();
+                ctx.moveTo(barX+br,padTop);ctx.lineTo(barX+barW-br,padTop);ctx.quadraticCurveTo(barX+barW,padTop,barX+barW,padTop+br);
+                ctx.lineTo(barX+barW,curY);ctx.lineTo(barX,curY);
+                ctx.lineTo(barX,padTop+br);ctx.quadraticCurveTo(barX,padTop,barX+br,padTop);
+                ctx.closePath();ctx.fillStyle='rgba(10,12,15,0.65)';ctx.fill();ctx.restore();
+            }
+
+            // Highlight DELTA-HYST zone
+            const deltaY=tempToY(deltaVal);
+            const hystY=tempToY(hystVal);
+            if(deltaY<hystY){
+                ctx.fillStyle=isTelo?'rgba(245,158,11,0.12)':'rgba(245,158,11,0.04)';
+                ctx.fillRect(barX,Math.max(deltaY,padTop),barW,Math.min(hystY,padTop+barH)-Math.max(deltaY,padTop));
+            }
+
+            // Scale ticks on right
+            ctx.textAlign='left';ctx.textBaseline='middle';
+            for(let t=rangeMin;t<=rangeMax+0.001;t+=0.05){
+                const y=tempToY(t);
+                if(y<padTop-1||y>padTop+barH+1)continue;
+                const isMajor=(Math.abs(t*100%10)<0.5);
+                ctx.beginPath();ctx.moveTo(barX+barW,y);ctx.lineTo(barX+barW+(isMajor?7:4),y);
+                ctx.strokeStyle=isTelo?'#4b5563':'#2a2d36';ctx.lineWidth=isMajor?0.8:0.5;ctx.stroke();
+                if(isMajor){
+                    ctx.fillStyle=sc('#22d3ee');ctx.font='8px Consolas,monospace';
+                    ctx.fillText(t.toFixed(2)+'°',barX+barW+9,y);
+                }
+            }
+
+            // Threshold lines
+            function drawLine(temp,color,label){
+                const y=tempToY(temp);
+                if(y<padTop-5||y>padTop+barH+5)return;
+                ctx.beginPath();ctx.moveTo(barX-4,y);ctx.lineTo(barX+barW,y);
+                ctx.strokeStyle=sc(color);ctx.lineWidth=1.5;ctx.stroke();
+                // Label left
+                ctx.fillStyle=sc(color);ctx.font='bold 8px Consolas,monospace';ctx.textAlign='right';
+                ctx.fillText(label,barX-7,y);
+                // Value right
+                ctx.fillStyle=sc(color);ctx.font='8px Consolas,monospace';ctx.textAlign='left';
+                ctx.fillText(temp.toFixed(2),barX+barW+9,y);
+            }
+            drawLine(baseVal,'#22d3ee','BASE');
+            drawLine(deltaVal,'#f59e0b','DELTA');
+            drawLine(hystVal,'#ef4444','HYST');
+
+            // Current temperature line (dashed green)
+            if(curY>=padTop-5&&curY<=padTop+barH+5){
+                ctx.beginPath();ctx.setLineDash([4,3]);
+                ctx.moveTo(barX-4,curY);ctx.lineTo(barX+barW,curY);
+                ctx.strokeStyle=sc('#4ade80');ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+                // Arrow left
+                ctx.fillStyle=sc('#4ade80');ctx.font='bold 10px monospace';ctx.textAlign='right';
+                ctx.fillText('▶',barX-7,curY);
+                // Value — show only if there's no threshold label overlapping
+                const curVal=tsar.toFixed(2);
+                ctx.fillStyle=sc('#4ade80');ctx.font='bold 9px Consolas,monospace';ctx.textAlign='left';
+                ctx.fillText(curVal+'°',barX+barW+9,curY);
+            }
+
+            // Border around bar
+            ctx.beginPath();
+            ctx.moveTo(barX+br,padTop);ctx.lineTo(barX+barW-br,padTop);ctx.quadraticCurveTo(barX+barW,padTop,barX+barW,padTop+br);
+            ctx.lineTo(barX+barW,padTop+barH-br);ctx.quadraticCurveTo(barX+barW,padTop+barH,barX+barW-br,padTop+barH);
+            ctx.lineTo(barX+br,padTop+barH);ctx.quadraticCurveTo(barX,padTop+barH,barX,padTop+barH-br);
+            ctx.lineTo(barX,padTop+br);ctx.quadraticCurveTo(barX,padTop,barX+br,padTop);
+            ctx.closePath();ctx.strokeStyle=isTelo?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.04)';ctx.lineWidth=1;ctx.stroke();
+
+            // Update current value display
+            const curEl=document.getElementById('tsar-bar-cur');
+            if(curEl){
+                if(tsar>0){
+                    curEl.textContent=tsar.toFixed(2)+'°';
+                    curEl.className='tsar-bar-cur-val'+(tsar>=hystVal?' danger':(tsar>=deltaVal?' warn':''));
+                }else{curEl.textContent='--';curEl.className='tsar-bar-cur-val';}
             }
         }
 
