@@ -1728,15 +1728,19 @@
                 }
             }
 
-            // === MARKERS: TSA on outer ring, СТОП and ТARA on tank ring (skip during animation) ===
+            // === MARKERS: TSA on outer ring, СТОП and TARA on tank ring, ТЕЛО end on tsar ring (skip during animation) ===
             if(!animTemps){
                 // Ring indices: 0=aqua(inner), 1=tank, 2=tsar, 3=tsa(outer)
                 const ringIdx={tsa:3,tank:1,tsar:2,aqua:0};
+                // ТЕЛО end threshold: rtsarM + histeresis + pressureCorrection (real-time)
+                const rtsarM=currentData.rtsarM||0;
+                const teloEnd=rtsarM>0.1?(rtsarM+(cfg.histeresis||0.24)+((currentData.pressure||760)-(currentData.adPressM||760))*(cfg.pressureCoeff||0.028)):0;
                 const markers=[
-                    {val:tsaLimit,      label:'TSA', color:'#ff3355', ringKey:'tsa',  show:tsaLimit>0&&tsaLimit<GS.maxT},
-                    {val:cfg.bakStopTemp,label:'СТОП',color:'#f97316',ringKey:'tank', show:cfg.bakStopTemp>0&&cfg.bakStopTemp<GS.maxT},
-                    {val:cfg.midterm,   label:'TARA',color:'#facc15',ringKey:'tank', show:cfg.midterm>0&&cfg.midterm<GS.maxT},
-                    {val:50,            label:'50',  color:'#666666',ringKey:'aqua', show:true}
+                    {val:tsaLimit,      label:'TSA',      color:'#ff3355', ringKey:'tsa',  show:tsaLimit>0&&tsaLimit<GS.maxT},
+                    {val:cfg.bakStopTemp,label:'СТОП',     color:'#f97316', ringKey:'tank', show:cfg.bakStopTemp>0&&cfg.bakStopTemp<GS.maxT},
+                    {val:cfg.midterm,   label:'TARA',     color:'#facc15', ringKey:'tank', show:cfg.midterm>0&&cfg.midterm<GS.maxT},
+                    {val:50,            label:'50',       color:'#666666', ringKey:'aqua', show:true},
+                    {val:teloEnd,        label:teloEnd.toFixed(1), color:'#00ff88', ringKey:'tsar', show:teloEnd>0&&teloEnd<GS.maxT}
                 ];
                 markers.forEach(mk=>{
                     if(!mk.show)return;
