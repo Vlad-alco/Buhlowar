@@ -1707,9 +1707,9 @@
                 const maj=(t%10===0);const mid=(t%5===0);const len=maj?12:(mid?8:3);
                 const r1=tir;const r2=tir+len;
                 ctx.beginPath();ctx.moveTo(Math.cos(a)*r1,Math.sin(a)*r1);ctx.lineTo(Math.cos(a)*r2,Math.sin(a)*r2);
-                ctx.strokeStyle=maj?'#4a5a70':(mid?'#3a4a60':'#2a3548');ctx.lineWidth=maj?2:(mid?1.2:0.6);ctx.stroke();
+                ctx.strokeStyle=maj?'#ff8c00':(mid?'#00d0e0':'#00f0ff');ctx.lineWidth=maj?2:(mid?1.2:0.8);ctx.stroke();
                 // Labels at major ticks
-                if(maj){ctx.fillStyle='#5a6a80';ctx.font='bold 8px Consolas,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t.toString(),Math.cos(a)*(r2+7),Math.sin(a)*(r2+7));}
+                if(maj){ctx.fillStyle='#ff8c00';ctx.font='bold 9px Consolas,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t.toString(),Math.cos(a)*(r2+7),Math.sin(a)*(r2+7));}
             }
             ctx.restore();
 
