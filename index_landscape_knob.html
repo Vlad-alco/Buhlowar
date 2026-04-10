@@ -1924,7 +1924,7 @@
 
             // Bar geometry (left-aligned to maximize space for scale+values on right)
             const barW=Math.min(40,cw*0.28);
-            const barX=8; // minimal left margin
+            const barX=14; // left margin for labels
             const padTop=10;const padBot=10;
             const barH=ch-padTop-padBot;
 
@@ -2010,9 +2010,9 @@
                 ctx.fillStyle=sc(color);ctx.font='7px Consolas,monospace';ctx.textAlign='left';
                 ctx.fillText(temp.toFixed(2),valOffset,y);
             }
-            drawLine(baseVal,'#22d3ee','BASE');
-            drawLine(deltaVal,'#f59e0b','DELTA');
-            drawLine(hystVal,'#ef4444','HYST');
+            drawLine(baseVal,'#22d3ee','B');
+            drawLine(deltaVal,'#f59e0b','D');
+            drawLine(hystVal,'#ef4444','H');
 
             // Current temperature line (dashed green) - only indicator, value shown below bar
             if(curY>=padTop-5&&curY<=padTop+barH+5){
