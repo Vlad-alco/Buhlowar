@@ -1922,9 +1922,9 @@
             // Guard against zero/negative range (would cause NaN/infinity in rendering)
             if(rangeW<0.1)rangeW=0.1;
 
-            // Bar geometry (centered horizontally)
-            const barW=Math.min(50,cw*0.3);
-            const barX=(cw-barW)/2;
+            // Bar geometry (left-aligned to maximize space for scale+values on right)
+            const barW=Math.min(40,cw*0.28);
+            const barX=8; // minimal left margin
             const padTop=10;const padBot=10;
             const barH=ch-padTop-padBot;
 
@@ -1981,49 +1981,47 @@
                 ctx.fillRect(barX,Math.max(deltaY,padTop),barW,Math.min(hystY,padTop+barH)-Math.max(deltaY,padTop));
             }
 
-            // Scale ticks on right
+            // Scale ticks on right (compact)
             ctx.textAlign='left';ctx.textBaseline='middle';
+            const scaleOffset=barX+barW+3; // minimal gap from bar
             for(let t=rangeMin;t<=rangeMax+0.001;t+=0.05){
                 const y=tempToY(t);
                 if(y<padTop-1||y>padTop+barH+1)continue;
                 const isMajor=(Math.abs(t*100%10)<0.5);
-                ctx.beginPath();ctx.moveTo(barX+barW,y);ctx.lineTo(barX+barW+(isMajor?7:4),y);
+                ctx.beginPath();ctx.moveTo(scaleOffset,y);ctx.lineTo(scaleOffset+(isMajor?6:3),y);
                 ctx.strokeStyle=isTelo?'#4b5563':'#2a2d36';ctx.lineWidth=isMajor?0.8:0.5;ctx.stroke();
                 if(isMajor){
-                    ctx.fillStyle=sc('#22d3ee');ctx.font='8px Consolas,monospace';
-                    ctx.fillText(t.toFixed(2)+'°',barX+barW+9,y);
+                    ctx.fillStyle=sc('#22d3ee');ctx.font='7px Consolas,monospace';
+                    ctx.fillText(t.toFixed(2),scaleOffset+8,y);
                 }
             }
 
             // Threshold lines
+            const valOffset=barX+barW+42; // values right of scale
             function drawLine(temp,color,label){
                 const y=tempToY(temp);
                 if(y<padTop-5||y>padTop+barH+5)return;
                 ctx.beginPath();ctx.moveTo(barX-4,y);ctx.lineTo(barX+barW,y);
                 ctx.strokeStyle=sc(color);ctx.lineWidth=1.5;ctx.stroke();
                 // Label left
-                ctx.fillStyle=sc(color);ctx.font='bold 8px Consolas,monospace';ctx.textAlign='right';
-                ctx.fillText(label,barX-7,y);
-                // Value right
-                ctx.fillStyle=sc(color);ctx.font='8px Consolas,monospace';ctx.textAlign='left';
-                ctx.fillText(temp.toFixed(2),barX+barW+9,y);
+                ctx.fillStyle=sc(color);ctx.font='bold 7px Consolas,monospace';ctx.textAlign='right';
+                ctx.fillText(label,barX-5,y);
+                // Value right (right of scale)
+                ctx.fillStyle=sc(color);ctx.font='7px Consolas,monospace';ctx.textAlign='left';
+                ctx.fillText(temp.toFixed(2),valOffset,y);
             }
             drawLine(baseVal,'#22d3ee','BASE');
             drawLine(deltaVal,'#f59e0b','DELTA');
             drawLine(hystVal,'#ef4444','HYST');
 
-            // Current temperature line (dashed green)
+            // Current temperature line (dashed green) - only indicator, value shown below bar
             if(curY>=padTop-5&&curY<=padTop+barH+5){
                 ctx.beginPath();ctx.setLineDash([4,3]);
                 ctx.moveTo(barX-4,curY);ctx.lineTo(barX+barW,curY);
                 ctx.strokeStyle=sc('#4ade80');ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
-                // Arrow left
+                // Arrow left only
                 ctx.fillStyle=sc('#4ade80');ctx.font='bold 10px monospace';ctx.textAlign='right';
-                ctx.fillText('▶',barX-7,curY);
-                // Value — show only if there's no threshold label overlapping
-                const curVal=tsar.toFixed(2);
-                ctx.fillStyle=sc('#4ade80');ctx.font='bold 9px Consolas,monospace';ctx.textAlign='left';
-                ctx.fillText(curVal+'°',barX+barW+9,curY);
+                ctx.fillText('▶',barX-5,curY);
             }
 
             // Border around bar
