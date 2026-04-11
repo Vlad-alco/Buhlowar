@@ -18,10 +18,16 @@
 **Исправление (баг-фикс)**:
 - Поле `bmeWorking` было добавлено только в `handleApiStatus()`, но отсутствовало в `buildTelemetryJson()` (для облачного режима)
 - Добавлено поле `bmeWorking` в `buildTelemetryJson()` — теперь статус BME корректно показывается в обоих режимах
-- Добавлен debug вывод в Serial Monitor для диагностики
+
+**КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ**:
+- При неработающем BME `pressure = 0.0f`, и коррекция температур давала ошибку +28°C!
+- Добавлен метод `getPressureMmHg()` в SensorData с fallback на 760 мм рт.ст.
+- Исправлены все места расчёта коррекции: ProcessEngine.cpp, AppNetwork.cpp
 
 **Изменённые файлы**:
-- `AppNetwork.cpp`: добавлено поле bmeWorking в handleApiStatus() и buildTelemetryJson()
+- `ProcessCommon.h`: добавлен метод `getPressureMmHg()` с fallback
+- `ProcessEngine.cpp`: использование `getPressureMmHg()` вместо прямого расчёта
+- `AppNetwork.cpp`: добавлено поле bmeWorking, исправлен расчёт pressure_mmHg
 - `index_landscape_knob.html`: CSS .bme-badge, HTML badge, JS обновление статуса
 - `index_mobile.html`: CSS .bme-badge, HTML badge, JS обновление статуса
 

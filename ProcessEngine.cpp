@@ -838,7 +838,7 @@ void ProcessEngine::handleDistOtbor() {
         if (data.tank.value >= cfg.midterm) { 
             
             // === УЧЕТ ДАВЛЕНИЯ ===
-            float pressure_mmHg = data.pressure * 0.75006;
+            float pressure_mmHg = data.getPressureMmHg(); // С fallback на 760 при неработающем BME
             // Приводим текущую температуру бака к "нормальному" давлению
             float tankCorrected = data.tank.value + (760.0 - pressure_mmHg) * 0.037;
 
@@ -1620,9 +1620,8 @@ void ProcessEngine::updateDisplayData() {
     currentStatus.currentAqua = data.aqua.value;
     currentStatus.currentTsar = data.tsar.value;
     currentStatus.currentTank = data.tank.value;
-    // Конвертируем гПа → мм рт.ст. для таблицы ABV (getABV ожидает мм рт.ст.)
-// Коэффициент: 1 гПа = 0.75006 мм рт.ст.
-    float pressure = data.pressure * 0.75006f;
+    // Давление с fallback на 760 мм рт.ст. при неработающем BME
+    float pressure = data.getPressureMmHg();
     
     // Расчет крепости (getABV возвращает -1 если температура ниже 78.5°C)
     float abvBak = configManager->getABV(data.tank.value, pressure, false);

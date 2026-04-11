@@ -55,6 +55,11 @@ struct SensorData {
     bool isTankValid() const { return tank.status == SensorStatus::OK; }
     bool isAquaValid() const { return aqua.status == SensorStatus::OK; }
     bool isBmeValid() const { return bmeStatus == SensorStatus::OK; }
+    
+    // Возвращает давление в мм рт.ст. с fallback на 760 при неработающем датчике
+    float getPressureMmHg() const {
+        return isBmeValid() ? pressure * 0.75006f : 760.0f;
+    }
 };
 
 // ==================== СТАТУС СИСТЕМЫ ДЛЯ UI ====================

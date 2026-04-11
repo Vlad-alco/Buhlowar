@@ -776,7 +776,7 @@ void AppNetwork::handleApiSettings() {
     int newMidterm = getInt("midterm", -1);
     
     const SensorData& sensors = processEngine->getSensorData();
-    float pressure_mmHg = sensors.pressure * 0.75006f;
+    float pressure_mmHg = sensors.getPressureMmHg(); // С fallback на 760 при неработающем BME
 
     if (newMidterm != -1 && newMidterm != cfg.midterm) {
         cfg.midterm = newMidterm;
