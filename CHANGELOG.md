@@ -1,3 +1,27 @@
+## 2026-04-11 — Web UI: индикатор статуса датчика давления BME280
+
+### AppNetwork.cpp + index_landscape_knob.html + index_mobile.html — маркер BME +/-
+
+**Задача**: оператор должен видеть работает ли датчик давления BME280. При неработающем датчике давление показывается как 760 мм рт.ст. (fallback), коррекция температур считается от этого значения. Нужно визуально показать статус датчика.
+
+**Анализ логики работы**:
+1. При инициализации (`SensorAdapter::begin()`) вызывается `bme.begin()` — если датчик не найден, `bmeInitialized = false`
+2. При чтении данных — если получены NaN значения, датчик помечается как неработающий
+3. При `!bmeInitialized`: `pressure = 0.0f`, в web `currentData.pressure || 760` — показывается 760
+4. Коррекция температур (`pressCorr`) также считается от 760 — логика вычислений не ломается
+
+**Решение**:
+1. **API**: добавлено поле `bmeWorking: true/false` в JSON ответ (AppNetwork.cpp)
+2. **index_landscape_knob.html**: маркер **BME +** (cyan) / **BME -** (red) под шкалой давления в блоке АТМОСФЕРА
+3. **index_mobile.html**: маркер **BME +** (cyan) / **BME -** (red) в шапке после иконок НАГРЕВ/МЕШАЛКА/ВОДА
+
+**Изменённые файлы**:
+- `AppNetwork.cpp`: добавлено поле bmeWorking в JSON
+- `index_landscape_knob.html`: CSS .bme-badge, HTML badge, JS обновление статуса
+- `index_mobile.html`: CSS .bme-badge, HTML badge, JS обновление статуса
+
+---
+
 ## 2026-04-11 — Web UI: индикатор облачных данных + кнопка LANDSCAPE
 
 ### index_landscape_knob.html — «Данные: X сек назад» в шапке при облачном режиме
