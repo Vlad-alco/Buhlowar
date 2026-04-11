@@ -1100,6 +1100,19 @@
             }
             // ====================================
             
+            // === BME STATUS BADGE ===
+            const bmeBadge = document.getElementById('bme-status-badge');
+            if (bmeBadge) {
+                if (currentData.bmeWorking) {
+                    bmeBadge.textContent = 'BME +';
+                    bmeBadge.className = 'bme-badge bme-ok ml-1';
+                } else {
+                    bmeBadge.textContent = 'BME -';
+                    bmeBadge.className = 'bme-badge bme-err ml-1';
+                }
+            }
+            // =========================
+            
             // Время процесса отображается только под диаграммой (center-time-val)
             const pressureInfoEl = document.getElementById('pressure-value');
             if (pressureInfoEl) pressureInfoEl.textContent = Math.round(currentData.pressure || 0);
