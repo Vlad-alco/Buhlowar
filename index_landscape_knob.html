@@ -807,6 +807,7 @@
                 <div style="display:flex;align-items:center;gap:3px;">
                     <div id="network-mode-badge" class="net-badge w">W</div>
                     <span id="conn-mode-label" style="font-size:7px;color:#5a6577;letter-spacing:0.05em;">LOK</span>
+                    <span id="cloud-data-age" style="font-size:7px;color:#5a6577;letter-spacing:0.05em;display:none;">Данные: <span id="cloud-age-val">?</span> сек</span>
                 </div>
                 <span id="save-toast" class="save-toast">СОХРАНЕНО</span>
             </div>
@@ -1620,6 +1621,10 @@
                 const m=cloudMode?'C':(currentData.network_mode||'X');
                 nb.textContent=m;nb.className='net-badge '+(m==='W'?'w':(m==='A'?'a':(m==='C'?'c':'x')));
                 if(ml){if(cloudMode){ml.textContent='CLD';ml.style.color='var(--neon-blue)';}else{ml.textContent='LOK';ml.style.color='#5a6577';}}
+                // Cloud data age
+                const cda=document.getElementById('cloud-data-age');
+                const cav=document.getElementById('cloud-age-val');
+                if(cda&&cav){if(cloudMode){const age=cloudLastUpdate?Math.max(0,Math.floor((Date.now()/1000-cloudLastUpdate))):'?';cav.textContent=age;cda.style.display='inline';}else{cda.style.display='none';}}
             }
 
             // Header indicators
