@@ -292,7 +292,7 @@ void setup() {
   lcd.setCursor(0, 0);
   lcd.print("BUHLOWAR SYSTEM");
   lcd.setCursor(0, 1);
-  lcd.print("V 2803 ESP32 S3 ");
+  lcd.print("ESP32 S3 ");
   delay(800);
   
   mainMenu->display();
